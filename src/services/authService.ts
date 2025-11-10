@@ -9,12 +9,27 @@ import { createRefreshToken, rotateRefreshToken, revokeRefreshToken } from './re
 
 type NullableDate = string | null;
 
+type RegisterRoleInput = Role | 'user' | 'backlog';
+
+function normalizeRole(role: RegisterRoleInput): Role {
+  if (role === 'backlog') {
+    return 'admin';
+  }
+  if (role === 'user') {
+    return 'client';
+  }
+  if (role === 'admin' || role === 'client') {
+    return role;
+  }
+  return 'client';
+}
+
 interface RegisterInput {
   email: string;
   password: string;
   name: string;
   dateOfBirth: NullableDate;
-  role: Role;
+  role: RegisterRoleInput;
 }
 
 interface LoginInput {
@@ -61,11 +76,13 @@ export async function registerLocalUser(input: RegisterInput): Promise<AuthRespo
   const userId = randomUUID();
 
   try {
+    const normalizedRole = normalizeRole(input.role);
+
     const result = await pool.query<User>(
       `INSERT INTO users (id, email, password_hash, name, date_of_birth, role)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [userId, input.email, passwordHash, input.name, input.dateOfBirth, input.role]
+      [userId, input.email, passwordHash, input.name, input.dateOfBirth, normalizedRole]
     );
 
     const user = result.rows[0];
