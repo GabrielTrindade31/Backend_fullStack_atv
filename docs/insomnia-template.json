@@ -1,0 +1,151 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2024-05-30T00:00:00.000Z",
+  "__export_source": "insomnia.backend_fullstack:v1",
+  "resources": [
+    {
+      "_id": "wrk_backend_fullstack",
+      "parentId": null,
+      "modified": 0,
+      "created": 0,
+      "name": "Backend FullStack ATV",
+      "description": "Coleção para testar autenticação local, Google e validação de tokens.",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_backend_fullstack",
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "name": "Base Environment",
+      "data": {
+        "baseUrl": "http://localhost:3000",
+        "accessToken": ""
+      },
+      "dataPropertyOrder": {
+        "&": ["baseUrl", "accessToken"]
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 0,
+      "_type": "environment"
+    },
+    {
+      "_id": "req_register",
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "url": "{{ _.baseUrl }}/auth/register",
+      "name": "POST Registrar usuário",
+      "description": "Cadastro de usuário local com validações de senha e e-mail duplicado.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"usuario@example.com\",\n  \"password\": \"Senha@Forte123\",\n  \"confirmPassword\": \"Senha@Forte123\",\n  \"name\": \"Nome do Usuário\",\n  \"dateOfBirth\": \"1995-05-20\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 0,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_login",
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "url": "{{ _.baseUrl }}/auth/login",
+      "name": "POST Login",
+      "description": "Login local com e-mail e senha.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"usuario@example.com\",\n  \"password\": \"Senha@Forte123\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 1,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_me",
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "url": "{{ _.baseUrl }}/auth/me",
+      "name": "GET Perfil",
+      "description": "Perfil do usuário autenticado.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.accessToken }}"
+      },
+      "metaSortKey": 2,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_validate",
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "url": "{{ _.baseUrl }}/auth/validate",
+      "name": "POST Validar token",
+      "description": "Endpoint para outros serviços verificarem a validade do JWT.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"token\": \"{{ _.accessToken }}\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 3,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    }
+  ]
+}
