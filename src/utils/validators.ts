@@ -6,6 +6,21 @@ const dateSchema = z
   .min(1, 'Data de nascimento inválida.')
   .refine((value) => !Number.isNaN(Date.parse(value)), 'Data de nascimento inválida.');
 
+const roleSchema = z
+  .enum(['client', 'admin', 'user', 'backlog'], {
+    errorMap: () => ({ message: 'Perfil de acesso inválido.' }),
+  })
+  .default('client')
+  .transform((value) => {
+    if (value === 'user') {
+      return 'client' as const;
+    }
+    if (value === 'backlog') {
+      return 'admin' as const;
+    }
+    return value;
+  });
+
 export const registerSchema = z
   .object({
     email: z.string({ required_error: 'E-mail é obrigatório.' }).email('E-mail inválido.'),
@@ -24,11 +39,7 @@ export const registerSchema = z
       }
       return value;
     }),
-    role: z
-      .enum(['client', 'admin'], {
-        errorMap: () => ({ message: 'Perfil de acesso inválido.' }),
-      })
-      .default('client'),
+    role: roleSchema,
   })
   .superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {

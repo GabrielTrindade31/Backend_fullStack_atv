@@ -50,6 +50,7 @@ Cria um usuário local com e-mail e senha.
 ```
 
 > A senha deve ter ao menos 8 caracteres, com letras maiúsculas e minúsculas, número e caractere especial.
+> Para compatibilidade com integrações antigas, o backend também aceita `user` (mapeado para `client`) e `backlog` (mapeado para `admin`).
 
 **Resposta 201**
 ```json
@@ -91,7 +92,7 @@ Cria um usuário local com e-mail e senha.
 Login com e-mail e senha. O corpo é igual ao do registro (sem `confirmPassword`, `name`, `role`). A resposta repete o formato acima.
 
 ### `POST /auth/google`
-Recebe um `idToken` do Google Identity, sincroniza o usuário e devolve o mesmo payload de sessão dos outros logins.
+Recebe um `idToken` do Google Identity, sincroniza (ou cria na primeira chamada) o usuário e devolve o mesmo payload de sessão dos outros logins.
 
 ```json
 {
