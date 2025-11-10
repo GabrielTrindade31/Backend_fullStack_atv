@@ -11,7 +11,7 @@ for (const key of requiredEnvVars) {
 }
 
 export const env = {
-  port: parseInt(process.env.PORT ?? '3000', 10),
+  port: parseInt(process.env.PORT ?? '4000', 10),
   databaseUrl: process.env.DATABASE_URL as string,
   jwtSecret: process.env.JWT_SECRET as string,
   googleClientId: process.env.GOOGLE_CLIENT_ID,
