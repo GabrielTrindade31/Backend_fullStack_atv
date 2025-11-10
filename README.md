@@ -1,8 +1,8 @@
 # Mini-Projeto Fullstack - Backend
 
-API REST desenvolvida em Node.js com TypeScript, Express e PostgreSQL, implementando autenticação baseada em JWT e estrutura em camadas (middlewares, routes, controllers, services, models e database). O projeto contempla validações robustas, hash de senhas com **bcrypt**, logs estruturados e exemplos de requisições via `curl`.
+API REST desenvolvida em Node.js com TypeScript, Express e PostgreSQL para atuar como **provedor central de autenticação** da plataforma. Além das credenciais locais, a API permite login com Google, gerenciamento de tokens de acesso e refresh com rotatividade segura, introspecção de tokens para outros backends e validação de permissões (usuário `customer` x `admin`).
 
-Na evolução desta versão foi adicionado um CRUD completo e autenticado de **tarefas** (to-do list) permitindo criar, listar, buscar por filtros, atualizar (PUT/PATCH) e remover itens associados ao usuário autenticado.
+O projeto mantém o CRUD autenticado de **tarefas** como módulo de exemplo e inclui documentação via Swagger acessível em `/docs`.
 
 ## Sumário
 
@@ -62,20 +62,20 @@ docker compose up -d postgres
    cp .env.example .env
    ```
 
-3. Configure os valores necessários (veja detalhes em [`docs/postgresql.md`](docs/postgresql.md)):
+3. Preencha o `.env` com as variáveis obrigatórias. Para o ambiente compartilhado em Neon e login com Google já configurados no projeto, utilize os valores abaixo:
 
    ```env
    PORT=3333
    NODE_ENV=development
-   DATABASE_URL=postgresql://mini_projeto:mini_projeto@localhost:5432/mini_projeto_fullstack
-   DATABASE_URL_PROD= # URI do banco utilizado no deploy
-   POSTGRES_SSL=false
-   JWT_SECRET=dev-secret-change-me # substitua por uma chave segura em produção
+   DATABASE_URL=postgresql://neondb_owner:npg_8FmGL9ShYJCk@ep-old-tooth-acehkb32-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require
+   POSTGRES_SSL=require
+   JWT_SECRET=altere-esta-chave-em-producao
+   JWT_ACCESS_EXPIRES_IN_MIN=15
+   REFRESH_TOKEN_EXPIRES_IN_DAYS=7
+   GOOGLE_CLIENT_ID=1053185903831-lt44jeufu4rb52u35agpoi76qvi368k2.apps.googleusercontent.com
    ```
 
-   > Se estiver utilizando um provedor gerenciado (por exemplo, Neon), substitua `DATABASE_URL` pela URI fornecida pelo serviço e defina `POSTGRES_SSL=true`. O restante das variáveis pode permanecer igual.
-
-   Para gerar uma chave aleatória, execute `openssl rand -base64 32` ou utilize a alternativa descrita na documentação.
+   > Gere uma nova chave forte para `JWT_SECRET` antes de publicar em produção (`openssl rand -base64 32`).
 
 4. Instale as dependências:
 
@@ -142,17 +142,17 @@ Escolha a opção que melhor se adequa ao seu cenário e preencha `DATABASE_URL`
    npm run dev
    ```
 
-O servidor sobe na porta definida em `PORT` (padrão `3333`). As rotas disponíveis são:
+O servidor sobe na porta definida em `PORT` (padrão `3333`). As rotas principais são:
 
-- `POST /register`
-- `POST /login`
-- `GET /protected` (necessita header `Authorization: Bearer <token>`)
-- `POST /tasks` (cria tarefa)
-- `GET /tasks` (lista tarefas com suporte a filtros por `status`, `title` e `dueDate`)
-- `GET /tasks/:id`
-- `PUT /tasks/:id`
-- `PATCH /tasks/:id`
-- `DELETE /tasks/:id`
+- `POST /auth/register`
+- `POST /auth/login`
+- `POST /auth/login/google`
+- `POST /auth/token/refresh`
+- `POST /auth/logout`
+- `POST /auth/token/introspect`
+- `GET /auth/me` *(requer `Authorization: Bearer <accessToken>`)*
+- `GET /protected` *(requer `Authorization: Bearer <accessToken>`)*
+- CRUD de tarefas autenticadas em `/tasks`
 
 Todos os endpoints de tarefas exigem autenticação via JWT.
 
@@ -175,14 +175,16 @@ Para encerrar os serviços locais, utilize `Ctrl+C` no terminal da API e `docker
 ## Execução no GitHub Codespaces
 
 1. Crie o Codespace a partir deste repositório selecionando o template padrão de Node.js.
-2. Copie o arquivo `.env.example` para `.env` e informe as variáveis necessárias (você pode usar Docker ou uma URI de PostgreSQL gerenciada).
-3. No terminal do Codespace, instale as dependências e inicie o banco/servidor:
+2. Copie o arquivo `.env.example` para `.env` e substitua os valores conforme a seção [Configuração](#configuração) (o projeto já está preparado para usar o banco Neon compartilhado, não é necessário subir Docker).
+3. Instale as dependências, aplique o schema no banco remoto e inicie o servidor:
 
    ```bash
    npm install
-   docker compose up -d postgres # ou configure DATABASE_URL com um provedor externo
+   psql "postgresql://neondb_owner:npg_8FmGL9ShYJCk@ep-old-tooth-acehkb32-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require" -f sql/schema.sql
    npm run dev
    ```
+
+   > Caso o comando `psql` não esteja disponível, instale o cliente com `sudo apt-get update && sudo apt-get install -y postgresql-client` antes de executá-lo.
 
 4. Utilize a aba **Ports** para expor a porta `3333` e acesse a URL pública fornecida pelo Codespace para testar os endpoints (os scripts em [`requests/`](requests/) também funcionam ajustando `BASE_URL`).
 
@@ -243,15 +245,22 @@ Antes de executar as requisições de tarefas configure, no Insomnia/Postman, os
    vercel link
    ```
 
-3. Na aba **Build & Output Settings** do painel, deixe os campos como a tabela abaixo (não há etapa de build dedicada porque o handler em [`api/index.ts`](api/index.ts) é empacotado automaticamente pelo runtime `@vercel/node`):
+3. No painel da Vercel, configure o projeto como **Serverless Function** com runtime `@vercel/node` (isso é feito automaticamente ao detectar o arquivo [`vercel.json`](vercel.json)). Em **General → Project Settings** defina:
 
-   | Campo             | Valor                          |
-   | ----------------- | ------------------------------ |
-   | Build Command     | `None` *(toggle desativado)*   |
-   | Install Command   | `npm install` *(padrão da Vercel)* |
-   | Output Directory  | `N/A` *(deixe em branco)*      |
+   | Campo                | Valor                                                                 |
+   | -------------------- | --------------------------------------------------------------------- |
+   | Root Directory       | `./` (ou selecione a raiz do repositório)                             |
+   | Framework Preset     | `Other`                                                               |
 
-   > **Não é necessário configurar `npm run build`.** O runtime da Vercel transpila o projeto automaticamente quando encontra o handler TypeScript, então qualquer comando manual de build pode ser deixado vazio.
+   Em seguida, na seção **Build & Output Settings** configure exatamente como a tabela abaixo (não há etapa de build dedicada porque o handler em [`api/index.ts`](api/index.ts) é empacotado automaticamente pelo runtime `@vercel/node`):
+
+   | Campo             | Valor                                  |
+   | ----------------- | -------------------------------------- |
+   | Build Command     | deixar o toggle **desligado**          |
+   | Install Command   | `npm install` *(padrão da Vercel)*     |
+   | Output Directory  | deixar em branco                       |
+
+   > **Não configure `npm run build`.** O runtime da Vercel transpila o projeto automaticamente quando encontra o handler TypeScript, então qualquer comando manual de build pode (e deve) permanecer vazio.
 
 4. Configure as variáveis de ambiente no painel da Vercel ou via CLI. Para um banco hospedado na Neon, por exemplo, os valores ficam:
 
@@ -261,6 +270,8 @@ Antes de executar as requisições de tarefas configure, no Insomnia/Postman, os
    | `POSTGRES_SSL`     | `true`                                                       | Mantém TLS obrigatório em produção. |
    | `JWT_SECRET`       | `openssl rand -base64 32` *(valor forte gerado por você)*     | Necessário para assinar tokens. |
    | `NODE_ENV`         | `production`                                                 | Força o uso de `DATABASE_URL_PROD` e otimizações. |
+
+   > **Dica:** no Codespaces você pode importar as variáveis locais com `vercel env pull` e publicá-las com `vercel env push`. Caso prefira configurar pelo painel (como na captura enviada), adicione cada chave na tabela de *Environment Variables* clicando em **Add More** e preenchendo o valor correspondente.
 
    Se desejar usar o mesmo banco em previews, replique essas variáveis no escopo `Preview` ou aponte `DATABASE_URL` diretamente para a mesma URL.
 

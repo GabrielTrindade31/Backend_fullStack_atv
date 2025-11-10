@@ -18,6 +18,9 @@ exports.env = {
     nodeEnv: process.env.NODE_ENV ?? 'development',
     port: Number(process.env.PORT ?? 3333),
     jwtSecret: process.env.JWT_SECRET ?? '',
+    jwtAccessExpiresInMinutes: Number(process.env.JWT_ACCESS_EXPIRES_IN_MIN ?? 15),
+    refreshTokenExpiresInDays: Number(process.env.REFRESH_TOKEN_EXPIRES_IN_DAYS ?? 7),
+    googleClientId: process.env.GOOGLE_CLIENT_ID ?? '',
     databaseUrl: resolveDatabaseUrl(),
     databaseSsl: resolveDatabaseSsl(),
 };
@@ -28,6 +31,9 @@ const validateEnv = () => {
     }
     if (!exports.env.jwtSecret) {
         missing.push('JWT_SECRET');
+    }
+    if (!exports.env.googleClientId) {
+        missing.push('GOOGLE_CLIENT_ID');
     }
     if (missing.length > 0) {
         throw new Error(`Variáveis de ambiente ausentes: ${missing.join(', ')}`);
