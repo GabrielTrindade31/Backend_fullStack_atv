@@ -1,0 +1,484 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2024-10-19T00:00:00.000Z",
+  "__export_source": "insomnia.backend_fullstack:v2",
+  "resources": [
+    {
+      "_id": "wrk_backend_fullstack",
+      "parentId": null,
+      "modified": 0,
+      "created": 0,
+      "name": "Backend FullStack ATV",
+      "description": "Coleção para testar autenticação local, Google e validação de tokens com controle de backlog.",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_backend_fullstack",
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "name": "Base Environment",
+      "data": {
+        "baseUrl": "http://localhost:3000",
+        "userEmail": "usuario@example.com",
+        "userPassword": "Senha@Forte123",
+        "userToken": "",
+        "backlogToken": "",
+        "googleIdToken": ""
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "baseUrl",
+          "userEmail",
+          "userPassword",
+          "userToken",
+          "backlogToken",
+          "googleIdToken"
+        ]
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 0,
+      "_type": "environment"
+    },
+    {
+      "_id": "req_health",
+      "name": "GET Health",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/health",
+      "description": "Verifica se o serviço está disponível.",
+      "headers": [],
+      "body": {},
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 0,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_register_user",
+      "name": "POST Registrar usuário padrão",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/register",
+      "description": "Cadastro local com perfil padrão (user).",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.userEmail }}\",\n  \"password\": \"{{ _.userPassword }}\",\n  \"confirmPassword\": \"{{ _.userPassword }}\",\n  \"name\": \"Usuário Padrão\",\n  \"dateOfBirth\": \"1995-05-20\",\n  \"role\": \"user\"\n}"
+      },
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 1,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_register_backlog",
+      "name": "POST Registrar usuário backlog",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/register",
+      "description": "Cadastro local com permissão de backlog.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"backlog@example.com\",\n  \"password\": \"Senha@Forte123\",\n  \"confirmPassword\": \"Senha@Forte123\",\n  \"name\": \"Usuário Backlog\",\n  \"role\": \"backlog\"\n}"
+      },
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 2,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_register_duplicate",
+      "name": "POST Registrar - e-mail duplicado",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/register",
+      "description": "Retorna erro quando o e-mail já existe.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.userEmail }}\",\n  \"password\": \"{{ _.userPassword }}\",\n  \"confirmPassword\": \"{{ _.userPassword }}\",\n  \"name\": \"Usuário Duplicado\"\n}"
+      },
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 3,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_register_weak",
+      "name": "POST Registrar - senha fraca",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/register",
+      "description": "Validação de senha inválida.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"weak@example.com\",\n  \"password\": \"123\",\n  \"confirmPassword\": \"123\",\n  \"name\": \"Senha Fraca\"\n}"
+      },
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 4,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_register_invalid",
+      "name": "POST Registrar - payload incompleto",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/register",
+      "description": "Valida obrigatoriedade de campos.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{}"
+      },
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 5,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_login_success",
+      "name": "POST Login",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "description": "Login local com e-mail e senha.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.userEmail }}\",\n  \"password\": \"{{ _.userPassword }}\"\n}"
+      },
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 6,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_login_wrong_password",
+      "name": "POST Login - senha incorreta",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "description": "Retorna 401 quando a senha não confere.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.userEmail }}\",\n  \"password\": \"SenhaErrada123\"\n}"
+      },
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 7,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_login_invalid_email",
+      "name": "POST Login - e-mail inválido",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "description": "Valida formato de e-mail.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"email-invalido\",\n  \"password\": \"{{ _.userPassword }}\"\n}"
+      },
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 8,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_login_invalid_payload",
+      "name": "POST Login - payload incompleto",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "description": "Verifica tratamento de payload mal formatado.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.userEmail }}\"\n}"
+      },
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 9,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_google_login",
+      "name": "POST Login Google",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/google",
+      "description": "Valida o fluxo de login social com token do Google.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"idToken\": \"{{ _.googleIdToken }}\"\n}"
+      },
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 10,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_me",
+      "name": "GET Perfil",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/auth/me",
+      "description": "Perfil do usuário autenticado.",
+      "headers": [],
+      "body": {},
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.userToken }}"
+      },
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "parameters": [],
+      "metaSortKey": 11,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_validate_user",
+      "name": "POST Validar token - usuário padrão",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/validate",
+      "description": "Confirma se o token do usuário comum é válido e retorna as permissões.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"token\": \"{{ _.userToken }}\"\n}"
+      },
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 12,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_validate_backlog",
+      "name": "POST Validar token - backlog",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/validate",
+      "description": "Confirma se o token possui permissão de backlog.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"token\": \"{{ _.backlogToken }}\"\n}"
+      },
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 13,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_validate_invalid",
+      "name": "POST Validar token inválido",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/validate",
+      "description": "Exemplo de token inválido.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"token\": \"abc.def.ghi\"\n}"
+      },
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 14,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    }
+  ]
+}
