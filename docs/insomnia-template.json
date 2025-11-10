@@ -21,11 +21,13 @@
       "created": 0,
       "name": "Base Environment",
       "data": {
-        "baseUrl": "http://localhost:4000",
+        "baseUrl": "https://backend-full-stack-atv.vercel.app",
         "userEmail": "usuario@example.com",
         "userPassword": "Senha@Forte123",
         "userToken": "",
-        "backlogToken": "",
+        "userRefreshToken": "",
+        "adminToken": "",
+        "adminUserId": "",
         "googleIdToken": ""
       },
       "dataPropertyOrder": {
@@ -34,7 +36,9 @@
           "userEmail",
           "userPassword",
           "userToken",
-          "backlogToken",
+          "userRefreshToken",
+          "adminToken",
+          "adminUserId",
           "googleIdToken"
         ]
       },
@@ -470,11 +474,11 @@
       "_type": "request"
     },
     {
-      "_id": "req_validate_backlog",
-      "name": "POST Validar token - backlog",
+      "_id": "req_validate_admin",
+      "name": "POST Validar token - admin",
       "method": "POST",
       "url": "{{ _.baseUrl }}/auth/validate",
-      "description": "Confirma se o token possui permissão de backlog.",
+      "description": "Confirma se o token possui permissões administrativas.",
       "headers": [
         {
           "name": "Content-Type",
@@ -483,7 +487,7 @@
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"token\": \"{{ _.backlogToken }}\"\n}"
+        "text": "{\n  \"token\": \"{{ _.adminToken }}\"\n}"
       },
       "parentId": "wrk_backend_fullstack",
       "modified": 0,
@@ -521,6 +525,116 @@
       "parameters": [],
       "authentication": {},
       "metaSortKey": 16,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_refresh_session",
+      "name": "POST Refresh session",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/refresh",
+      "description": "Rotaciona o refresh token e devolve novos tokens.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"refreshToken\": \"{{ _.userRefreshToken }}\"\n}"
+      },
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 17,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_logout_session",
+      "name": "POST Logout",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/logout",
+      "description": "Revoga explicitamente o refresh token atual.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"refreshToken\": \"{{ _.userRefreshToken }}\"\n}"
+      },
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 18,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_list_users",
+      "name": "GET Listar usuários (admin)",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/auth/users",
+      "description": "Lista todos os usuários. Requer token de administrador.",
+      "headers": [],
+      "body": {},
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.adminToken }}"
+      },
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "parameters": [],
+      "metaSortKey": 19,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_get_user_by_id",
+      "name": "GET Usuário por ID",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/auth/users/{{ _.adminUserId }}",
+      "description": "Busca um usuário específico. Admin pode consultar qualquer ID; clientes apenas o próprio.",
+      "headers": [],
+      "body": {},
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.adminToken }}"
+      },
+      "parentId": "wrk_backend_fullstack",
+      "modified": 0,
+      "created": 0,
+      "parameters": [],
+      "metaSortKey": 20,
       "settingStoreCookies": true,
       "settingSendCookies": true,
       "settingDisableRenderRequestBody": false,
