@@ -10,6 +10,16 @@ https://<seu-dominio-ou-url-do-vercel>
 
 O backend expõe os endpoints abaixo sob o prefixo `/auth`.
 
+## Preparando o banco de dados
+
+Antes de executar o servidor pela primeira vez (ou sempre que precisar garantir que as tabelas existam), rode:
+
+```bash
+npm run db:init
+```
+
+O comando reaproveita a mesma lógica utilizada pelo servidor para criar a tabela `users` e garantir a coluna de `role`, que controla as permissões de backlog.
+
 ## Formato de autenticação
 
 Os tokens JWT retornados pelos endpoints de login devem ser enviados no header `Authorization` com o formato:
@@ -30,7 +40,8 @@ Cria um usuário local com e-mail e senha.
   "password": "Senha@Forte123",
   "confirmPassword": "Senha@Forte123",
   "name": "Nome do Usuário",
-  "dateOfBirth": "1995-05-20"
+  "dateOfBirth": "1995-05-20",
+  "role": "user"
 }
 ```
 
@@ -46,9 +57,17 @@ Cria um usuário local com e-mail e senha.
     "name": "Nome do Usuário",
     "dateOfBirth": "1995-05-20",
     "googleId": null,
+    "role": "user",
     "createdAt": "2024-01-01T00:00:00.000Z",
     "updatedAt": "2024-01-01T00:00:00.000Z"
-  }
+  },
+  "permissions": [
+    "auth:register",
+    "auth:login",
+    "auth:token:validate",
+    "profile:read",
+    "app:navigation:standard"
+  ]
 }
 ```
 
@@ -103,6 +122,7 @@ Authorization: Bearer <jwt>
     "name": "Nome do Usuário",
     "dateOfBirth": "1995-05-20",
     "googleId": null,
+    "role": "user",
     "createdAt": "2024-01-01T00:00:00.000Z",
     "updatedAt": "2024-01-01T00:00:00.000Z"
   }
@@ -128,15 +148,18 @@ Valida um token JWT sem acessar recursos protegidos.
     "email": "usuario@example.com",
     "name": "Nome do Usuário",
     "dateOfBirth": "1995-05-20",
-    "googleId": null,
-    "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2024-01-01T00:00:00.000Z"
-  },
+  "googleId": null,
+  "role": "user",
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+},
   "permissions": [
     "auth:register",
     "auth:login",
     "auth:token:validate",
-    "profile:read"
+    "profile:read",
+    "app:navigation:standard",
+    "backlog:access"
   ]
 }
 ```
@@ -153,9 +176,16 @@ Valida um token JWT sem acessar recursos protegidos.
 ```json
 {
   "valid": false,
-  "message": "Usuário não encontrado."
+"message": "Usuário não encontrado."
 }
 ```
+
+## Perfis de acesso e backlog
+
+- **user**: acesso padrão para páginas comuns do portal. As permissões retornadas incluirão `app:navigation:standard`, que pode ser utilizada pelos outros backends para liberar rotas genéricas.
+- **backlog**: inclui todas as permissões anteriores e adiciona `backlog:access`. Outros serviços podem checar a presença dessa string para liberar funcionalidades exclusivas de backlog.
+
+Sempre que um novo cadastro precisar de acesso ao backlog, informe `"role": "backlog"` no payload de registro ou atualize a coluna `role` diretamente na tabela `users`.
 
 ## Fluxo do login com Google
 

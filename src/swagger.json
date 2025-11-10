@@ -3,7 +3,7 @@
   "info": {
     "title": "Backend FullStack ATV API",
     "version": "1.1.0",
-    "description": "Documentação dos endpoints de autenticação e verificação de tokens."
+    "description": "Documentação dos endpoints de autenticação e verificação de tokens.\n\nComando para preparar o banco de dados local: `npm run db:init`."
   },
   "servers": [
     {
@@ -12,13 +12,19 @@
     }
   ],
   "tags": [
-    { "name": "Autenticação" },
-    { "name": "Saúde" }
+    {
+      "name": "Autenticação"
+    },
+    {
+      "name": "Saúde"
+    }
   ],
   "paths": {
     "/health": {
       "get": {
-        "tags": ["Saúde"],
+        "tags": [
+          "Saúde"
+        ],
         "summary": "Health check",
         "responses": {
           "200": {
@@ -42,7 +48,9 @@
     },
     "/auth/register": {
       "post": {
-        "tags": ["Autenticação"],
+        "tags": [
+          "Autenticação"
+        ],
         "summary": "Cadastro de usuário local",
         "description": "Cria um usuário local validando formatação de senha, confirmação de senha e duplicidade de e-mail.",
         "requestBody": {
@@ -51,6 +59,14 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RegisterRequest"
+              },
+              "example": {
+                "email": "usuario@example.com",
+                "password": "Senha@Forte123",
+                "confirmPassword": "Senha@Forte123",
+                "name": "Nome do Usuário",
+                "dateOfBirth": "1995-05-20",
+                "role": "user"
               }
             }
           }
@@ -62,6 +78,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AuthResponse"
+                },
+                "example": {
+                  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                  "user": {
+                    "id": "2f2b06e2-5fdd-4a9a-b7bd-1fd2c35c8e20",
+                    "email": "usuario@example.com",
+                    "name": "Nome do Usuário",
+                    "dateOfBirth": "1995-05-20",
+                    "googleId": null,
+                    "role": "user",
+                    "createdAt": "2024-01-01T00:00:00.000Z",
+                    "updatedAt": "2024-01-01T00:00:00.000Z"
+                  },
+                  "permissions": [
+                    "auth:register",
+                    "auth:login",
+                    "auth:token:validate",
+                    "profile:read",
+                    "app:navigation:standard"
+                  ]
                 }
               }
             }
@@ -81,7 +117,9 @@
     },
     "/auth/login": {
       "post": {
-        "tags": ["Autenticação"],
+        "tags": [
+          "Autenticação"
+        ],
         "summary": "Login com e-mail e senha",
         "description": "Valida credenciais locais e retorna um JWT para acesso às rotas protegidas.",
         "requestBody": {
@@ -90,6 +128,10 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/LoginRequest"
+              },
+              "example": {
+                "email": "usuario@example.com",
+                "password": "Senha@Forte123"
               }
             }
           }
@@ -101,6 +143,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AuthResponse"
+                },
+                "example": {
+                  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                  "user": {
+                    "id": "2f2b06e2-5fdd-4a9a-b7bd-1fd2c35c8e20",
+                    "email": "usuario@example.com",
+                    "name": "Nome do Usuário",
+                    "dateOfBirth": "1995-05-20",
+                    "googleId": null,
+                    "role": "user",
+                    "createdAt": "2024-01-01T00:00:00.000Z",
+                    "updatedAt": "2024-01-01T00:00:00.000Z"
+                  },
+                  "permissions": [
+                    "auth:register",
+                    "auth:login",
+                    "auth:token:validate",
+                    "profile:read",
+                    "app:navigation:standard"
+                  ]
                 }
               }
             }
@@ -120,7 +182,9 @@
     },
     "/auth/google": {
       "post": {
-        "tags": ["Autenticação"],
+        "tags": [
+          "Autenticação"
+        ],
         "summary": "Login com token do Google",
         "description": "Valida um token de ID do Google, sincroniza o usuário e devolve o JWT local.",
         "requestBody": {
@@ -159,7 +223,9 @@
     },
     "/auth/me": {
       "get": {
-        "tags": ["Autenticação"],
+        "tags": [
+          "Autenticação"
+        ],
         "summary": "Perfil do usuário autenticado",
         "security": [
           {
@@ -173,6 +239,18 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserProfileResponse"
+                },
+                "example": {
+                  "user": {
+                    "id": "2f2b06e2-5fdd-4a9a-b7bd-1fd2c35c8e20",
+                    "email": "usuario@example.com",
+                    "name": "Nome do Usuário",
+                    "dateOfBirth": "1995-05-20",
+                    "googleId": null,
+                    "role": "user",
+                    "createdAt": "2024-01-01T00:00:00.000Z",
+                    "updatedAt": "2024-01-01T00:00:00.000Z"
+                  }
                 }
               }
             }
@@ -192,15 +270,20 @@
     },
     "/auth/validate": {
       "post": {
-        "tags": ["Autenticação"],
+        "tags": [
+          "Autenticação"
+        ],
         "summary": "Validação de token para integrações externas",
-        "description": "Permite que outros serviços verifiquem a autenticidade de um token e obtenham as permissões do usuário.",
+        "description": "Permite que outros serviços verifiquem a autenticidade de um token e obtenham as permissões do usuário.\n\nRetorna o perfil e as permissões para que outros backends entendam se o usuário possui acesso ao backlog.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ValidateTokenRequest"
+              },
+              "example": {
+                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
               }
             }
           }
@@ -212,6 +295,27 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ValidateTokenResponse"
+                },
+                "example": {
+                  "valid": true,
+                  "user": {
+                    "id": "2f2b06e2-5fdd-4a9a-b7bd-1fd2c35c8e20",
+                    "email": "usuario@example.com",
+                    "name": "Nome do Usuário",
+                    "dateOfBirth": "1995-05-20",
+                    "googleId": null,
+                    "role": "user",
+                    "createdAt": "2024-01-01T00:00:00.000Z",
+                    "updatedAt": "2024-01-01T00:00:00.000Z"
+                  },
+                  "permissions": [
+                    "auth:register",
+                    "auth:login",
+                    "auth:token:validate",
+                    "profile:read",
+                    "app:navigation:standard",
+                    "backlog:access"
+                  ]
                 }
               }
             }
@@ -261,7 +365,12 @@
     "schemas": {
       "RegisterRequest": {
         "type": "object",
-        "required": ["email", "password", "confirmPassword", "name"],
+        "required": [
+          "email",
+          "password",
+          "confirmPassword",
+          "name"
+        ],
         "properties": {
           "email": {
             "type": "string",
@@ -288,12 +397,24 @@
             "format": "date",
             "nullable": true,
             "example": "1995-05-20"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "backlog"
+            ],
+            "description": "Define o perfil de acesso. Use `user` para acesso padrão ou `backlog` para liberar o backlog.",
+            "example": "user"
           }
         }
       },
       "LoginRequest": {
         "type": "object",
-        "required": ["email", "password"],
+        "required": [
+          "email",
+          "password"
+        ],
         "properties": {
           "email": {
             "type": "string",
@@ -309,7 +430,9 @@
       },
       "GoogleLoginRequest": {
         "type": "object",
-        "required": ["idToken"],
+        "required": [
+          "idToken"
+        ],
         "properties": {
           "idToken": {
             "type": "string",
@@ -321,31 +444,83 @@
       "PublicUser": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "email": { "type": "string", "format": "email", "nullable": true },
-          "name": { "type": "string" },
-          "dateOfBirth": { "type": "string", "format": "date", "nullable": true },
-          "googleId": { "type": "string", "nullable": true },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "googleId": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "backlog"
+            ],
+            "description": "Perfil de acesso associado ao usuário.",
+            "example": "user"
+          }
         }
       },
       "AuthResponse": {
         "type": "object",
         "properties": {
-          "token": { "type": "string", "description": "Token JWT de acesso" },
-          "user": { "$ref": "#/components/schemas/PublicUser" }
+          "token": {
+            "type": "string",
+            "description": "Token JWT de acesso"
+          },
+          "user": {
+            "$ref": "#/components/schemas/PublicUser"
+          },
+          "permissions": {
+            "type": "array",
+            "description": "Lista das permissões concedidas ao usuário autenticado.",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "auth:login",
+              "profile:read",
+              "app:navigation:standard"
+            ]
+          }
         }
       },
       "UserProfileResponse": {
         "type": "object",
         "properties": {
-          "user": { "$ref": "#/components/schemas/PublicUser" }
+          "user": {
+            "$ref": "#/components/schemas/PublicUser"
+          }
         }
       },
       "ValidateTokenRequest": {
         "type": "object",
-        "required": ["token"],
+        "required": [
+          "token"
+        ],
         "properties": {
           "token": {
             "type": "string",
@@ -357,24 +532,43 @@
       "ValidateTokenResponse": {
         "type": "object",
         "properties": {
-          "valid": { "type": "boolean", "example": true },
-          "user": { "$ref": "#/components/schemas/PublicUser" },
+          "valid": {
+            "type": "boolean",
+            "example": true
+          },
+          "user": {
+            "$ref": "#/components/schemas/PublicUser"
+          },
           "permissions": {
             "type": "array",
-            "items": { "type": "string" },
-            "example": ["auth:login", "profile:read"]
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "auth:register",
+              "auth:login",
+              "auth:token:validate",
+              "profile:read",
+              "app:navigation:standard",
+              "backlog:access"
+            ]
           }
         }
       },
       "ErrorResponse": {
         "type": "object",
         "properties": {
-          "message": { "type": "string", "example": "Descrição do erro." }
+          "message": {
+            "type": "string",
+            "example": "Descrição do erro."
+          }
         }
       },
       "ValidationErrorResponse": {
         "allOf": [
-          { "$ref": "#/components/schemas/ErrorResponse" },
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
           {
             "type": "object",
             "properties": {
@@ -385,9 +579,13 @@
                   "properties": {
                     "path": {
                       "type": "array",
-                      "items": { "type": "string" }
+                      "items": {
+                        "type": "string"
+                      }
                     },
-                    "message": { "type": "string" }
+                    "message": {
+                      "type": "string"
+                    }
                   }
                 }
               }

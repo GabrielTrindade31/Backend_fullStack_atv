@@ -4,6 +4,7 @@ import { mapToPublicUser, PublicUser, User } from '../types/user';
 import { hashPassword, verifyPassword } from '../utils/password';
 import { signAccessToken } from '../utils/jwt';
 import { verifyGoogleToken } from './googleAuthService';
+import { getUserPermissions } from './permissionService';
 
 type NullableDate = string | null;
 
@@ -12,6 +13,7 @@ interface RegisterInput {
   password: string;
   name: string;
   dateOfBirth: NullableDate;
+  role: 'user' | 'backlog';
 }
 
 interface LoginInput {
@@ -22,6 +24,7 @@ interface LoginInput {
 interface AuthResponse {
   token: string;
   user: PublicUser;
+  permissions: string[];
 }
 
 async function findUserByEmail(email: string): Promise<User | null> {
@@ -45,15 +48,16 @@ export async function registerLocalUser(input: RegisterInput): Promise<AuthRespo
 
   try {
     const result = await pool.query<User>(
-      `INSERT INTO users (id, email, password_hash, name, date_of_birth)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO users (id, email, password_hash, name, date_of_birth, role)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [userId, input.email, passwordHash, input.name, input.dateOfBirth]
+      [userId, input.email, passwordHash, input.name, input.dateOfBirth, input.role]
     );
 
     const user = result.rows[0];
     const token = signAccessToken(user.id, user.email);
-    return { token, user: mapToPublicUser(user) };
+    const permissions = await getUserPermissions(user.id);
+    return { token, user: mapToPublicUser(user), permissions };
   } catch (error: any) {
     if (error?.code === '23505') {
       throw new Error('E-mail já cadastrado.');
@@ -74,7 +78,8 @@ export async function loginLocalUser(input: LoginInput): Promise<AuthResponse> {
   }
 
   const token = signAccessToken(user.id, user.email);
-  return { token, user: mapToPublicUser(user) };
+  const permissions = await getUserPermissions(user.id);
+  return { token, user: mapToPublicUser(user), permissions };
 }
 
 export async function loginWithGoogle(idToken: string): Promise<AuthResponse> {
@@ -131,7 +136,8 @@ export async function loginWithGoogle(idToken: string): Promise<AuthResponse> {
     }
 
     const token = signAccessToken(user.id, user.email);
-    return { token, user: mapToPublicUser(user) };
+    const permissions = await getUserPermissions(user.id);
+    return { token, user: mapToPublicUser(user), permissions };
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;

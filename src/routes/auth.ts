@@ -17,6 +17,7 @@ router.post('/register', async (req, res) => {
       password: userData.password,
       name: userData.name,
       dateOfBirth: userData.dateOfBirth,
+      role: userData.role,
     });
     res.status(201).json(response);
   } catch (error) {
