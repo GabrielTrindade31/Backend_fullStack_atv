@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { pool, initializeDatabase } from '../config/db';
+import { initializeDatabase, pool } from '../config/database';
 
 async function main(): Promise<void> {
   try {

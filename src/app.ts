@@ -1,7 +1,8 @@
-import express from 'express';
 import cors from 'cors';
-import authRoutes from './routes/auth';
-import healthRouter from './routes/health.route';
+import express from 'express';
+import { authRouter } from './modules/auth/auth.controller';
+import { healthRouter } from './modules/health/health.controller';
+import { errorHandler } from './middlewares/errorHandler';
 
 const app = express();
 
@@ -9,12 +10,8 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/', healthRouter);
+app.use('/auth', authRouter);
 
-app.use('/auth', authRoutes);
+app.use(errorHandler);
 
-app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ message: 'Erro interno do servidor.' });
-});
-
-export default app;
+export { app };
