@@ -17,6 +17,11 @@ export function authenticate(req: Request, res: Response, next: NextFunction): v
   try {
     const payload = verifyAccessToken(token);
     req.userId = payload.sub;
+    if (!payload.role) {
+      res.status(401).json({ message: 'Token de acesso inválido.' });
+      return;
+    }
+    req.userRole = payload.role;
     next();
   } catch (error) {
     res.status(401).json({ message: 'Token de acesso inválido.' });

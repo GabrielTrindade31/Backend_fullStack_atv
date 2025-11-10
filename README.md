@@ -1,13 +1,27 @@
-# Backend de Autenticação
+# Backend de Autenticação & SSO
 
-Este projeto fornece um backend em Node.js/Express focado em autenticação para múltiplos clientes. Ele suporta cadastro local com e-mail e senha, login via Google e emissão de tokens JWT que podem ser reutilizados por outros serviços.
+Backend oficial da equipe de Cadastro para o ecossistema multi-times da atividade. O serviço centraliza cadastro, autenticação e
+single sign-on (SSO) para os módulos de Loja, Financiamento, Backoffice e Engajamento, garantindo consistência de permissões e
+rotas protegidas em todos os microserviços.
+
+## Funcionalidades principais
+
+- Cadastro local com validação robusta de senha e papel (`client` ou `admin`).
+- Login interno e via Google Identity Services.
+- Emissão de **access tokens** (JWT de 15 minutos) e **refresh tokens** opacos (30 dias) com rotação automática.
+- Endpoint de introspecção de token para outros backends (`POST /auth/validate`).
+- Mapeamento de permissões alinhado ao barema do projeto (clientes x admins).
+- Rotas administrativas para consulta de usuários (`GET /auth/users` e `GET /auth/users/:id`).
+- Documentação Swagger disponível em `/api-docs`.
 
 ## Tecnologias principais
 
 - Node.js + Express
+- TypeScript
 - PostgreSQL (Neon/Vercel Postgres)
 - JWT para autenticação stateless
 - Zod para validação de dados
+- Swagger UI + swagger-jsdoc
 - Google Identity para login social
 
 ## Configuração do ambiente
@@ -61,7 +75,7 @@ src/
 
 ## Banco de dados
 
-Na primeira execução, o backend cria automaticamente a tabela `users` com colunas para e-mail, senha hash, nome, data de nascimento, id do Google e o campo `role`, responsável por indicar se o usuário possui acesso ao backlog. Caso precise aplicar migrações adicionais, utilize um gerenciador de migrações de sua preferência. Você também pode forçar a criação/ajuste da tabela executando `npm run db:init`.
+Na primeira execução, o backend cria ou ajusta as tabelas `users` e `refresh_tokens`, migra perfis legados (`user` → `client`, `backlog` → `admin`) e aplica a constraint que limita os valores de `role`. Caso precise aplicar migrações adicionais, utilize um gerenciador de migrações de sua preferência. Você pode forçar a criação/ajuste das tabelas executando `npm run db:init`.
 
 ## Integração com frontends
 
