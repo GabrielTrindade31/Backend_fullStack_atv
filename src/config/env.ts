@@ -6,6 +6,9 @@ export interface EnvConfig {
   nodeEnv: string;
   port: number;
   jwtSecret: string;
+  jwtAccessExpiresInMinutes: number;
+  refreshTokenExpiresInDays: number;
+  googleClientId: string;
   databaseUrl: string;
   databaseSsl: boolean;
 }
@@ -27,6 +30,9 @@ export const env: EnvConfig = {
   nodeEnv: process.env.NODE_ENV ?? 'development',
   port: Number(process.env.PORT ?? 3333),
   jwtSecret: process.env.JWT_SECRET ?? '',
+  jwtAccessExpiresInMinutes: Number(process.env.JWT_ACCESS_EXPIRES_IN_MIN ?? 15),
+  refreshTokenExpiresInDays: Number(process.env.REFRESH_TOKEN_EXPIRES_IN_DAYS ?? 7),
+  googleClientId: process.env.GOOGLE_CLIENT_ID ?? '',
   databaseUrl: resolveDatabaseUrl(),
   databaseSsl: resolveDatabaseSsl(),
 };
@@ -40,6 +46,10 @@ export const validateEnv = (): void => {
 
   if (!env.jwtSecret) {
     missing.push('JWT_SECRET');
+  }
+
+  if (!env.googleClientId) {
+    missing.push('GOOGLE_CLIENT_ID');
   }
 
   if (missing.length > 0) {
