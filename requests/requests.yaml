@@ -1,0 +1,393 @@
+_type: export
+__export_format: 4
+__export_date: 2025-10-19T00:00:00.000Z
+__export_source: mini-projeto-fullstack
+resources:
+  - _id: wrk_mpf
+    parentId: null
+    modified: 0
+    created: 0
+    name: Mini-Projeto-Fullstack
+    description: "Coleção de testes"
+    scope: collection
+    _type: workspace
+
+  - _id: env_mpf_base
+    parentId: wrk_mpf
+    modified: 0
+    created: 0
+    name: Base Environment
+    data:
+      base_url: https://postgree.onemoretry.net
+      token: ""
+      token_outro_usuario: ""
+      task_id: ""
+      task_id_outro_usuario: ""
+    _type: environment
+
+  # -------- REGISTER --------
+  - _id: req_register_ok
+    parentId: wrk_mpf
+    name: Cadastro bem-sucedido
+    method: POST
+    url: "{{ _.base_url }}/register"
+    headers:
+      - name: Content-Type
+        value: application/json
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "name": "Gabriel",
+          "email": "gabriel+ok@example.com",
+          "password": "Aa@123456"
+        }
+    _type: request
+
+  - _id: req_register_email_duplicado
+    parentId: wrk_mpf
+    name: Cadastro - e-mail repetido
+    method: POST
+    url: "{{ _.base_url }}/register"
+    headers:
+      - name: Content-Type
+        value: application/json
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "name": "Gabriel",
+          "email": "gabriel+ok@example.com",
+          "password": "Aa@123456"
+        }
+    _type: request
+
+  - _id: req_register_senha_invalida
+    parentId: wrk_mpf
+    name: Cadastro - senha inválida
+    method: POST
+    url: "{{ _.base_url }}/register"
+    headers:
+      - name: Content-Type
+        value: application/json
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "name": "Gabriel",
+          "email": "gabriel+weak@example.com",
+          "password": "123"
+        }
+    _type: request
+
+  - _id: req_register_email_invalido
+    parentId: wrk_mpf
+    name: Cadastro - e-mail inválido
+    method: POST
+    url: "{{ _.base_url }}/register"
+    headers:
+      - name: Content-Type
+        value: application/json
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "name": "Gabriel",
+          "email": "email-invalido",
+          "password": "Aa@123456"
+        }
+    _type: request
+
+  - _id: req_register_mal_formatado
+    parentId: wrk_mpf
+    name: Cadastro - requisição mal formatada
+    method: POST
+    url: "{{ _.base_url }}/register"
+    headers:
+      - name: Content-Type
+        value: application/json
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "email": "gabriel+missingname@example.com"
+        }
+    _type: request
+
+  # -------- LOGIN --------
+  - _id: req_login_ok
+    parentId: wrk_mpf
+    name: Login bem-sucedido
+    method: POST
+    url: "{{ _.base_url }}/login"
+    headers:
+      - name: Content-Type
+        value: application/json
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "email": "gabriel+ok@example.com",
+          "password": "Aa@123456"
+        }
+    _type: request
+
+  - _id: req_login_senha_errada
+    parentId: wrk_mpf
+    name: Login - senha inválida
+    method: POST
+    url: "{{ _.base_url }}/login"
+    headers:
+      - name: Content-Type
+        value: application/json
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "email": "gabriel+ok@example.com",
+          "password": "senhaErrada"
+        }
+    _type: request
+
+  - _id: req_login_email_invalido
+    parentId: wrk_mpf
+    name: Login - e-mail inválido
+    method: POST
+    url: "{{ _.base_url }}/login"
+    headers:
+      - name: Content-Type
+        value: application/json
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "email": "email-invalido",
+          "password": "Aa@123456"
+        }
+    _type: request
+
+  - _id: req_login_mal_formatado
+    parentId: wrk_mpf
+    name: Login - requisição mal formatada
+    method: POST
+    url: "{{ _.base_url }}/login"
+    headers:
+      - name: Content-Type
+        value: application/json
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "email": "gabriel@example.com"
+        }
+    _type: request
+
+  # -------- PROTECTED --------
+  - _id: req_protected_com_token
+    parentId: wrk_mpf
+    name: /protected com token válido
+    method: GET
+    url: "{{ _.base_url }}/protected"
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+    _type: request
+
+  - _id: req_protected_sem_token
+    parentId: wrk_mpf
+    name: /protected sem token
+    method: GET
+    url: "{{ _.base_url }}/protected"
+    _type: request
+
+  - _id: req_protected_token_invalido
+    parentId: wrk_mpf
+    name: /protected com token inválido
+    method: GET
+    url: "{{ _.base_url }}/protected"
+    headers:
+      - name: Authorization
+        value: "Bearer abc.def.ghi"
+    _type: request
+
+  # -------- TASKS --------
+  - _id: req_tasks_create_ok
+    parentId: wrk_mpf
+    name: Tarefas - criação bem-sucedida
+    method: POST
+    url: "{{ _.base_url }}/tasks"
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "title": "Preparar apresentação",
+          "description": "Revisar slides e compartilhar com a equipe",
+          "status": "in_progress",
+          "dueDate": "2025-01-15T23:59:59.000Z"
+        }
+    _type: request
+
+  - _id: req_tasks_create_sem_token
+    parentId: wrk_mpf
+    name: Tarefas - criação sem token
+    method: POST
+    url: "{{ _.base_url }}/tasks"
+    headers:
+      - name: Content-Type
+        value: application/json
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "title": "Tarefa sem token"
+        }
+    _type: request
+
+  - _id: req_tasks_create_payload_invalido
+    parentId: wrk_mpf
+    name: Tarefas - criação payload inválido
+    method: POST
+    url: "{{ _.base_url }}/tasks"
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "title": "Ok",
+          "status": "done"
+        }
+    _type: request
+
+  - _id: req_tasks_listar
+    parentId: wrk_mpf
+    name: Tarefas - lista completa
+    method: GET
+    url: "{{ _.base_url }}/tasks"
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+    _type: request
+
+  - _id: req_tasks_listar_filtrada
+    parentId: wrk_mpf
+    name: Tarefas - lista filtrada por status e título
+    method: GET
+    url: "{{ _.base_url }}/tasks?status=in_progress&title=apresenta"
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+    _type: request
+
+  - _id: req_tasks_recuperar
+    parentId: wrk_mpf
+    name: Tarefas - obter por ID
+    method: GET
+    url: "{{ _.base_url }}/tasks/{{ _.task_id }}"
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+    _type: request
+
+  - _id: req_tasks_recuperar_forbidden
+    parentId: wrk_mpf
+    name: Tarefas - tentativa de acesso 403
+    method: GET
+    url: "{{ _.base_url }}/tasks/{{ _.task_id }}"
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.token_outro_usuario }}"
+    description: "Use token de outro usuário acessando task_id do usuário principal"
+    _type: request
+
+  - _id: req_tasks_recuperar_forbidden_owner
+    parentId: wrk_mpf
+    name: Tarefas - tentativa de acesso a tarefa de outro usuário
+    method: GET
+    url: "{{ _.base_url }}/tasks/{{ _.task_id_outro_usuario }}"
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+    description: "Usuário principal acessando tarefa de outro usuário"
+    _type: request
+
+  - _id: req_tasks_atualizar_put
+    parentId: wrk_mpf
+    name: Tarefas - atualização completa (PUT)
+    method: PUT
+    url: "{{ _.base_url }}/tasks/{{ _.task_id }}"
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "title": "Preparar apresentação atualizada",
+          "description": "Adicionar exemplos no capítulo 3",
+          "status": "completed",
+          "dueDate": null
+        }
+    _type: request
+
+  - _id: req_tasks_atualizar_patch
+    parentId: wrk_mpf
+    name: Tarefas - atualização parcial (PATCH)
+    method: PATCH
+    url: "{{ _.base_url }}/tasks/{{ _.task_id }}"
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "status": "in_progress"
+        }
+    _type: request
+
+  - _id: req_tasks_atualizar_patch_invalido
+    parentId: wrk_mpf
+    name: Tarefas - PATCH sem campos
+    method: PATCH
+    url: "{{ _.base_url }}/tasks/{{ _.task_id }}"
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+    body:
+      mimeType: application/json
+      text: |
+        {}
+    _type: request
+
+  - _id: req_tasks_deletar
+    parentId: wrk_mpf
+    name: Tarefas - exclusão bem-sucedida
+    method: DELETE
+    url: "{{ _.base_url }}/tasks/{{ _.task_id }}"
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+    _type: request
+
+  - _id: req_tasks_deletar_token_invalido
+    parentId: wrk_mpf
+    name: Tarefas - exclusão com token inválido
+    method: DELETE
+    url: "{{ _.base_url }}/tasks/{{ _.task_id }}"
+    headers:
+      - name: Authorization
+        value: "Bearer abc.def.ghi"
+    _type: request
