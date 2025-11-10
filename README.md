@@ -245,15 +245,22 @@ Antes de executar as requisições de tarefas configure, no Insomnia/Postman, os
    vercel link
    ```
 
-3. Na aba **Build & Output Settings** do painel, deixe os campos como a tabela abaixo (não há etapa de build dedicada porque o handler em [`api/index.ts`](api/index.ts) é empacotado automaticamente pelo runtime `@vercel/node`):
+3. No painel da Vercel, configure o projeto como **Serverless Function** com runtime `@vercel/node` (isso é feito automaticamente ao detectar o arquivo [`vercel.json`](vercel.json)). Em **General → Project Settings** defina:
 
-   | Campo             | Valor                          |
-   | ----------------- | ------------------------------ |
-   | Build Command     | `None` *(toggle desativado)*   |
-   | Install Command   | `npm install` *(padrão da Vercel)* |
-   | Output Directory  | `N/A` *(deixe em branco)*      |
+   | Campo                | Valor                                                                 |
+   | -------------------- | --------------------------------------------------------------------- |
+   | Root Directory       | `./` (ou selecione a raiz do repositório)                             |
+   | Framework Preset     | `Other`                                                               |
 
-   > **Não é necessário configurar `npm run build`.** O runtime da Vercel transpila o projeto automaticamente quando encontra o handler TypeScript, então qualquer comando manual de build pode ser deixado vazio.
+   Em seguida, na seção **Build & Output Settings** configure exatamente como a tabela abaixo (não há etapa de build dedicada porque o handler em [`api/index.ts`](api/index.ts) é empacotado automaticamente pelo runtime `@vercel/node`):
+
+   | Campo             | Valor                                  |
+   | ----------------- | -------------------------------------- |
+   | Build Command     | deixar o toggle **desligado**          |
+   | Install Command   | `npm install` *(padrão da Vercel)*     |
+   | Output Directory  | deixar em branco                       |
+
+   > **Não configure `npm run build`.** O runtime da Vercel transpila o projeto automaticamente quando encontra o handler TypeScript, então qualquer comando manual de build pode (e deve) permanecer vazio.
 
 4. Configure as variáveis de ambiente no painel da Vercel ou via CLI. Para um banco hospedado na Neon, por exemplo, os valores ficam:
 
@@ -263,6 +270,8 @@ Antes de executar as requisições de tarefas configure, no Insomnia/Postman, os
    | `POSTGRES_SSL`     | `true`                                                       | Mantém TLS obrigatório em produção. |
    | `JWT_SECRET`       | `openssl rand -base64 32` *(valor forte gerado por você)*     | Necessário para assinar tokens. |
    | `NODE_ENV`         | `production`                                                 | Força o uso de `DATABASE_URL_PROD` e otimizações. |
+
+   > **Dica:** no Codespaces você pode importar as variáveis locais com `vercel env pull` e publicá-las com `vercel env push`. Caso prefira configurar pelo painel (como na captura enviada), adicione cada chave na tabela de *Environment Variables* clicando em **Add More** e preenchendo o valor correspondente.
 
    Se desejar usar o mesmo banco em previews, replique essas variáveis no escopo `Preview` ou aponte `DATABASE_URL` diretamente para a mesma URL.
 
