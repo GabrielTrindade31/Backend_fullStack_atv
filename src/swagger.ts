@@ -1,12 +1,12 @@
-import swaggerJSDoc from 'swagger-jsdoc';
+import swaggerJSDoc, { Options } from 'swagger-jsdoc';
 
-const options: swaggerJSDoc.Options = {
+const options: Options = {
   definition: {
     openapi: '3.0.0',
     info: {
       title: 'Backend FullStack ATV',
       version: '1.0.0',
-      description: 'API documentation'
+      description: 'API documentation',
     },
     servers: [
       {

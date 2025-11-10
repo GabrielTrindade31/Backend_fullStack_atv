@@ -27,11 +27,14 @@ Cria um usuário local com e-mail e senha.
 ```json
 {
   "email": "usuario@example.com",
-  "password": "SenhaForte123",
+  "password": "Senha@Forte123",
+  "confirmPassword": "Senha@Forte123",
   "name": "Nome do Usuário",
   "dateOfBirth": "1995-05-20"
 }
 ```
+
+> A senha deve conter pelo menos 8 caracteres, incluindo letras maiúsculas, minúsculas, números e caractere especial.
 
 **Resposta 201**
 ```json
@@ -49,6 +52,11 @@ Cria um usuário local com e-mail e senha.
 }
 ```
 
+**Possíveis erros**
+
+- `400 Dados inválidos.` — Quando o e-mail já existe, as senhas não coincidem ou algum campo não atende às regras de validação.
+- O payload de erro pode conter o campo `issues` com os detalhes de validação retornados pelo Zod.
+
 ### `POST /auth/login`
 Realiza login via e-mail e senha.
 
@@ -61,6 +69,10 @@ Realiza login via e-mail e senha.
 ```
 
 **Resposta 200** – mesmo formato do endpoint de registro.
+
+**Possíveis erros**
+
+- `401 Credenciais inválidas.`
 
 ### `POST /auth/google`
 Realiza login com um token de ID do Google (obtido via Google Identity Services). O backend valida o token, cria o usuário caso não exista e devolve o JWT local.
@@ -111,8 +123,21 @@ Valida um token JWT sem acessar recursos protegidos.
 ```json
 {
   "valid": true,
-  "userId": "<uuid>",
-  "email": "usuario@example.com"
+  "user": {
+    "id": "<uuid>",
+    "email": "usuario@example.com",
+    "name": "Nome do Usuário",
+    "dateOfBirth": "1995-05-20",
+    "googleId": null,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  "permissions": [
+    "auth:register",
+    "auth:login",
+    "auth:token:validate",
+    "profile:read"
+  ]
 }
 ```
 
@@ -121,6 +146,14 @@ Valida um token JWT sem acessar recursos protegidos.
 {
   "valid": false,
   "message": "Token inválido."
+}
+```
+
+**Resposta 404** (usuário não encontrado)
+```json
+{
+  "valid": false,
+  "message": "Usuário não encontrado."
 }
 ```
 

@@ -2,39 +2,398 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Backend FullStack ATV API",
-    "version": "1.0.0",
-    "description": "Documentação básica para testes"
+    "version": "1.1.0",
+    "description": "Documentação dos endpoints de autenticação e verificação de tokens."
   },
   "servers": [
     {
       "url": "http://localhost:3000",
-      "description": "Local"
+      "description": "Ambiente local"
     }
+  ],
+  "tags": [
+    { "name": "Autenticação" },
+    { "name": "Saúde" }
   ],
   "paths": {
     "/health": {
       "get": {
+        "tags": ["Saúde"],
         "summary": "Health check",
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Aplicação disponível",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
                     "status": {
-                      "type": "string"
+                      "type": "string",
+                      "example": "ok"
                     }
                   }
-                },
-                "example": {
-                  "status": "ok"
                 }
               }
             }
           }
         }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Cadastro de usuário local",
+        "description": "Cria um usuário local validando formatação de senha, confirmação de senha e duplicidade de e-mail.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuário cadastrado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos ou e-mail já cadastrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Login com e-mail e senha",
+        "description": "Valida credenciais locais e retorna um JWT para acesso às rotas protegidas.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login realizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciais inválidas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/google": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Login com token do Google",
+        "description": "Valida um token de ID do Google, sincroniza o usuário e devolve o JWT local.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoogleLoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login Google realizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token do Google inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Autenticação"],
+        "summary": "Perfil do usuário autenticado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Perfil retornado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/validate": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Validação de token para integrações externas",
+        "description": "Permite que outros serviços verifiquem a autenticidade de um token e obtenham as permissões do usuário.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateTokenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token válido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateTokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Token não informado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Usuário associado ao token não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "RegisterRequest": {
+        "type": "object",
+        "required": ["email", "password", "confirmPassword", "name"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "usuario@example.com"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "description": "Ao menos 8 caracteres com letras maiúsculas, minúsculas, números e caractere especial.",
+            "example": "Senha@Forte123"
+          },
+          "confirmPassword": {
+            "type": "string",
+            "format": "password",
+            "example": "Senha@Forte123"
+          },
+          "name": {
+            "type": "string",
+            "example": "Nome do Usuário"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "example": "1995-05-20"
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "usuario@example.com"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "Senha@Forte123"
+          }
+        }
+      },
+      "GoogleLoginRequest": {
+        "type": "object",
+        "required": ["idToken"],
+        "properties": {
+          "idToken": {
+            "type": "string",
+            "description": "Token JWT retornado pelo Google Identity Services",
+            "example": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        }
+      },
+      "PublicUser": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "email": { "type": "string", "format": "email", "nullable": true },
+          "name": { "type": "string" },
+          "dateOfBirth": { "type": "string", "format": "date", "nullable": true },
+          "googleId": { "type": "string", "nullable": true },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "token": { "type": "string", "description": "Token JWT de acesso" },
+          "user": { "$ref": "#/components/schemas/PublicUser" }
+        }
+      },
+      "UserProfileResponse": {
+        "type": "object",
+        "properties": {
+          "user": { "$ref": "#/components/schemas/PublicUser" }
+        }
+      },
+      "ValidateTokenRequest": {
+        "type": "object",
+        "required": ["token"],
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "JWT a ser validado",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        }
+      },
+      "ValidateTokenResponse": {
+        "type": "object",
+        "properties": {
+          "valid": { "type": "boolean", "example": true },
+          "user": { "$ref": "#/components/schemas/PublicUser" },
+          "permissions": {
+            "type": "array",
+            "items": { "type": "string" },
+            "example": ["auth:login", "profile:read"]
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string", "example": "Descrição do erro." }
+        }
+      },
+      "ValidationErrorResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/ErrorResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "issues": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        ]
       }
     }
   }

@@ -126,6 +126,10 @@ export async function loginWithGoogle(idToken: string): Promise<AuthResponse> {
 
     await client.query('COMMIT');
 
+    if (!user) {
+      throw new Error('Não foi possível determinar o usuário autenticado pelo Google.');
+    }
+
     const token = signAccessToken(user.id, user.email);
     return { token, user: mapToPublicUser(user) };
   } catch (error) {

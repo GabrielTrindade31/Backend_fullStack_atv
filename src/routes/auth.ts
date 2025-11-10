@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { ZodError } from 'zod';
 import { authenticate } from '../middlewares/authMiddleware';
 import { getUserProfile, loginLocalUser, loginWithGoogle, registerLocalUser } from '../services/authService';
+import { getUserPermissions } from '../services/permissionService';
 import { verifyAccessToken } from '../utils/jwt';
 import { googleSchema, loginSchema, registerSchema } from '../utils/validators';
 
@@ -10,11 +11,12 @@ const router = Router();
 router.post('/register', async (req, res) => {
   try {
     const payload = registerSchema.parse(req.body);
+    const { confirmPassword: _confirmPassword, ...userData } = payload;
     const response = await registerLocalUser({
-      email: payload.email,
-      password: payload.password,
-      name: payload.name,
-      dateOfBirth: payload.dateOfBirth,
+      email: userData.email,
+      password: userData.password,
+      name: userData.name,
+      dateOfBirth: userData.dateOfBirth,
     });
     res.status(201).json(response);
   } catch (error) {
@@ -67,7 +69,7 @@ router.get('/me', authenticate, async (req, res) => {
   }
 });
 
-router.post('/validate', (req, res) => {
+router.post('/validate', async (req, res) => {
   const { token } = req.body as { token?: string };
   if (!token) {
     res.status(400).json({ valid: false, message: 'Token não informado.' });
@@ -75,9 +77,19 @@ router.post('/validate', (req, res) => {
   }
 
   try {
-    const { sub, email } = verifyAccessToken(token);
-    res.json({ valid: true, userId: sub, email });
+    const { sub } = verifyAccessToken(token);
+    const user = await getUserProfile(sub);
+    const permissions = await getUserPermissions(sub);
+    res.json({
+      valid: true,
+      user,
+      permissions,
+    });
   } catch (error) {
+    if ((error as Error).message === 'Usuário não encontrado.') {
+      res.status(404).json({ valid: false, message: 'Usuário não encontrado.' });
+      return;
+    }
     res.status(401).json({ valid: false, message: 'Token inválido.' });
   }
 });
