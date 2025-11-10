@@ -1,17 +1,21 @@
-import { app } from './app';
+import createApp from './app';
 import { env } from './config/env';
-import { initializeDatabase } from './config/database';
+import { connectDatabase } from './database';
+import logger from './utils/logger';
 
-async function bootstrap(): Promise<void> {
+const startServer = async (): Promise<void> => {
   try {
-    await initializeDatabase();
+    await connectDatabase();
+
+    const app = createApp();
+
     app.listen(env.port, () => {
-      console.log(`Server running on port ${env.port}`);
+      logger.info(`Servidor rodando na porta ${env.port}`);
     });
   } catch (error) {
-    console.error('Erro ao iniciar o servidor:', error);
+    logger.error('Falha ao iniciar o servidor', { error });
     process.exit(1);
   }
-}
+};
 
-void bootstrap();
+startServer();
