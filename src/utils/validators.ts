@@ -24,6 +24,11 @@ export const registerSchema = z
       }
       return value;
     }),
+    role: z
+      .enum(['user', 'backlog'], {
+        errorMap: () => ({ message: 'Perfil de acesso inválido.' }),
+      })
+      .default('user'),
   })
   .superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {

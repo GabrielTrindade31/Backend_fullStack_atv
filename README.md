@@ -32,6 +32,12 @@ Este projeto fornece um backend em Node.js/Express focado em autenticação para
 
    O servidor inicializa as tabelas necessárias automaticamente.
 
+   Se preferir inicializar manualmente (por exemplo em pipelines ou ambientes serverless), rode:
+
+   ```bash
+   npm run db:init
+   ```
+
 4. Para build de produção:
 
    ```bash
@@ -55,7 +61,7 @@ src/
 
 ## Banco de dados
 
-Na primeira execução, o backend cria automaticamente a tabela `users` com colunas para e-mail, senha hash, nome, data de nascimento e id do Google. Caso precise aplicar migrações adicionais, utilize um gerenciador de migrações de sua preferência.
+Na primeira execução, o backend cria automaticamente a tabela `users` com colunas para e-mail, senha hash, nome, data de nascimento, id do Google e o campo `role`, responsável por indicar se o usuário possui acesso ao backlog. Caso precise aplicar migrações adicionais, utilize um gerenciador de migrações de sua preferência. Você também pode forçar a criação/ajuste da tabela executando `npm run db:init`.
 
 ## Integração com frontends
 
@@ -66,6 +72,7 @@ Consulte o arquivo [`docs/INTEGRATION.md`](docs/INTEGRATION.md) para detalhes de
 - `npm run dev`: inicia o servidor em modo de desenvolvimento com recarregamento.
 - `npm run build`: compila o código TypeScript para a pasta `dist`.
 - `npm start`: executa a versão compilada.
+- `npm run db:init`: prepara o banco de dados garantindo a existência da tabela `users` com a coluna de `role`.
 
 ## Testes
 
