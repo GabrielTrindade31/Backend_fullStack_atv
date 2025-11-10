@@ -1,59 +1,53 @@
-# Backend de Autenticação & SSO
+# Backend Express + PostgreSQL
 
-Backend oficial da equipe de Cadastro para o ecossistema multi-times da atividade. O serviço centraliza cadastro, autenticação e
-single sign-on (SSO) para os módulos de Loja, Financiamento, Backoffice e Engajamento, garantindo consistência de permissões e
-rotas protegidas em todos os microserviços.
+API de autenticação inspirada na arquitetura do projeto de referência. Fornece registro local, login com senha ou Google, emissão de JWTs e refresh tokens rotativos. Toda a API segue resposta em JSON e pode ser exercitada facilmente via Insomnia ou cURL.
 
-## Funcionalidades principais
+## Recursos principais
 
-- Cadastro local com validação robusta de senha e papel (`client` ou `admin`).
-- Login interno e via Google Identity Services.
-- Emissão de **access tokens** (JWT de 15 minutos) e **refresh tokens** opacos (30 dias) com rotação automática.
-- Endpoint de introspecção de token para outros backends (`POST /auth/validate`).
-- Mapeamento de permissões alinhado ao barema do projeto (clientes x admins).
-- Rotas administrativas para consulta de usuários (`GET /auth/users` e `GET /auth/users/:id`).
-- Documentação Swagger disponível em `/api-docs`.
+- Porta fixa `4000` e conexão PostgreSQL lida a partir de `DATABASE_URL`.
+- Registro de usuários locais com papéis `client` ou `admin`.
+- Login com senha ou com Google Identity (ID Token).
+- Access token (JWT) curto + refresh token opaco com rotação automática.
+- Validação de token (`POST /auth/validate`) para outros serviços.
+- Listagem de usuários restrita a admins.
 
-## Tecnologias principais
+## Tecnologias
 
 - Node.js + Express
 - TypeScript
-- PostgreSQL (Neon/Vercel Postgres)
-- JWT para autenticação stateless
-- Zod para validação de dados
-- Swagger UI + swagger-jsdoc
-- Google Identity para login social
+- PostgreSQL (`pg`)
+- JWT (`jsonwebtoken`)
+- Zod para validação
+- Google Identity Services (`google-auth-library`)
 
-## Configuração do ambiente
+## Configuração
 
-1. Crie um arquivo `.env` baseado em `.env.example` e preencha as variáveis:
-   - `DATABASE_URL`: string de conexão fornecida pela Neon.
-   - `JWT_SECRET`: chave secreta segura para assinar os tokens.
-   - `GOOGLE_CLIENT_ID`: Client ID do OAuth 2.0 configurado na Google Cloud.
-   - `PORT` (opcional): porta usada pelo servidor HTTP.
+1. Crie um arquivo `.env` com as variáveis:
+   ```env
+   DATABASE_URL=postgres://usuario:senha@host:5432/db
+   JWT_SECRET=chave-super-secreta
+   GOOGLE_CLIENT_ID=seu-client-id.apps.googleusercontent.com
+   PORT=4000 # opcional, 4000 por padrão
+   JWT_EXPIRES_IN=15m # opcional
+   REFRESH_TOKEN_DAYS=7 # opcional
+   ```
 
-2. Instale as dependências (necessita acesso ao NPM):
-
+2. Instale as dependências:
    ```bash
    npm install
    ```
 
-3. Execute a aplicação em modo desenvolvimento:
-
-   ```bash
-   npm run dev
-   ```
-
-   O servidor inicializa as tabelas necessárias automaticamente.
-
-   Se preferir inicializar manualmente (por exemplo em pipelines ou ambientes serverless), rode:
-
+3. Inicialize as tabelas (opcional, executado automaticamente ao subir o servidor):
    ```bash
    npm run db:init
    ```
 
-4. Para build de produção:
+4. Rode em desenvolvimento:
+   ```bash
+   npm run dev
+   ```
 
+5. Build/produção:
    ```bash
    npm run build
    npm start
@@ -63,31 +57,38 @@ rotas protegidas em todos os microserviços.
 
 ```
 src/
-  app.ts            # Inicialização do Express
-  server.ts         # Bootstrap do servidor
-  config/           # Configurações de ambiente e banco
-  routes/           # Rotas HTTP
-  services/         # Regras de negócio de autenticação
-  middlewares/      # Middlewares (ex.: validação de JWT)
-  utils/            # Funções auxiliares (JWT, senha, validações)
-  types/            # Tipos compartilhados
+  app.ts                    # Configuração do Express
+  server.ts                 # Bootstrap do servidor
+  config/                   # Variáveis de ambiente e banco de dados
+  core/                     # Erros e utilitários HTTP
+  lib/                      # Helpers (JWT, senha, tokens)
+  middlewares/              # Autenticação, autorização e erros
+  modules/
+    auth/                   # Regras e rotas de autenticação
+    health/                 # Rota de healthcheck
+  scripts/                  # Utilitários (ex.: init-db)
+  types/                    # Tipagens globais
 ```
+
+## Endpoints
+
+- `GET /health` — Healthcheck.
+- `POST /auth/register` — Criação de usuário local.
+- `POST /auth/login` — Login com e-mail/senha.
+- `POST /auth/google` — Login social com Google (ID token).
+- `POST /auth/refresh` — Renova o access token.
+- `POST /auth/logout` — Revoga o refresh token informado.
+- `GET /auth/me` — Perfil do usuário autenticado.
+- `POST /auth/validate` — Introspecção de access token.
+- `GET /auth/users` — Lista usuários (somente admins).
+- `GET /auth/users/:id` — Perfil por ID (admin ou o próprio usuário).
+
+Todas as respostas seguem JSON. Use header `Authorization: Bearer <access_token>` nas rotas protegidas.
 
 ## Banco de dados
 
-Na primeira execução, o backend cria ou ajusta as tabelas `users` e `refresh_tokens`, migra perfis legados (`user` → `client`, `backlog` → `admin`) e aplica a constraint que limita os valores de `role`. Caso precise aplicar migrações adicionais, utilize um gerenciador de migrações de sua preferência. Você pode forçar a criação/ajuste das tabelas executando `npm run db:init`.
-
-## Integração com frontends
-
-Consulte o arquivo [`docs/INTEGRATION.md`](docs/INTEGRATION.md) para detalhes de endpoints, payloads e respostas esperadas.
-
-## Scripts úteis
-
-- `npm run dev`: inicia o servidor em modo de desenvolvimento com recarregamento.
-- `npm run build`: compila o código TypeScript para a pasta `dist`.
-- `npm start`: executa a versão compilada.
-- `npm run db:init`: prepara o banco de dados garantindo a existência da tabela `users` com a coluna de `role`.
+A aplicação cria automaticamente as tabelas `users` e `refresh_tokens` e garante a extensão `uuid-ossp`. Refresh tokens são salvos com hash SHA-256 e expiram conforme `REFRESH_TOKEN_DAYS`.
 
 ## Testes
 
-Atualmente não há testes automatizados definidos. Recomenda-se adicionar testes de integração/end-to-end que validem o fluxo de login e proteção de rotas.
+Ainda não há testes automatizados. Recomenda-se criar coleções no Insomnia/Postman para validar os fluxos de autenticação.
