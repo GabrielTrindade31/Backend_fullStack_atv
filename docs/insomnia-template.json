@@ -22,8 +22,8 @@
       "name": "Base Environment",
       "data": {
         "baseUrl": "https://backend-full-stack-atv.vercel.app",
-        "userEmail": "usuario@example.com",
-        "userPassword": "Senha@Forte123",
+        "userEmail": "davih.user@example.com",
+        "userPassword": "Davih@123",
         "userToken": "",
         "userRefreshToken": "",
         "adminToken": "",
@@ -162,7 +162,7 @@
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"email\": \"backlog@example.com\",\n  \"password\": \"Senha@Forte123\",\n  \"confirmPassword\": \"Senha@Forte123\",\n  \"name\": \"Usuário Backlog\",\n  \"role\": \"backlog\"\n}"
+        "text": "{\n  \"email\": \"davih.admin@example.com\",\n  \"password\": \"DavihAdmin@123\",\n  \"confirmPassword\": \"DavihAdmin@123\",\n  \"name\": \"Usuário Backoffice\",\n  \"role\": \"backlog\"\n}"
       },
       "parentId": "wrk_backend_fullstack",
       "modified": 0,
@@ -390,10 +390,10 @@
     },
     {
       "_id": "req_google_login",
-      "name": "POST Login Google",
+      "name": "POST Login/Registrar via Google",
       "method": "POST",
       "url": "{{ _.baseUrl }}/auth/google",
-      "description": "Valida o fluxo de login social com token do Google.",
+      "description": "Valida o fluxo de login social com token do Google (a conta é criada automaticamente na primeira chamada).",
       "headers": [
         {
           "name": "Content-Type",

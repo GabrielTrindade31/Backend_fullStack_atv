@@ -40,10 +40,10 @@ Cria um usuário local com e-mail e senha.
 **Body JSON**
 ```json
 {
-  "email": "usuario@example.com",
-  "password": "Senha@Forte123",
-  "confirmPassword": "Senha@Forte123",
-  "name": "Nome do Usuário",
+  "email": "davih.user@example.com",
+  "password": "Davih@123",
+  "confirmPassword": "Davih@123",
+  "name": "Usuário Padrão",
   "dateOfBirth": "1995-05-20",
   "role": "client"
 }
@@ -59,8 +59,8 @@ Cria um usuário local com e-mail e senha.
   "refreshToken": "<uuid>.<opaque-token>",
   "user": {
     "id": "<uuid>",
-    "email": "usuario@example.com",
-    "name": "Nome do Usuário",
+    "email": "davih.user@example.com",
+    "name": "Usuário Padrão",
     "dateOfBirth": "1995-05-20",
     "googleId": null,
     "role": "client",
@@ -92,7 +92,7 @@ Cria um usuário local com e-mail e senha.
 Login com e-mail e senha. O corpo é igual ao do registro (sem `confirmPassword`, `name`, `role`). A resposta repete o formato acima.
 
 ### `POST /auth/google`
-Recebe um `idToken` do Google Identity, sincroniza (ou cria na primeira chamada) o usuário e devolve o mesmo payload de sessão dos outros logins.
+Recebe um `idToken` do Google Identity, sincroniza (ou cria na primeira chamada) o usuário e devolve o mesmo payload de sessão dos outros logins. Na coleção do Insomnia incluída no repositório, procure pela requisição **POST Login/Registrar via Google** para validar este fluxo.
 
 ```json
 {
@@ -159,7 +159,7 @@ Introspecção de access tokens. Pode ser consumido por outros backends que não
   "permissions": [ /* ... */ ],
   "token": {
     "subject": "<uuid-do-usuário>",
-    "email": "usuario@example.com",
+    "email": "davih.user@example.com",
     "role": "client"
   }
 }
