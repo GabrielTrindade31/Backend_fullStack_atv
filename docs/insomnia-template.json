@@ -123,7 +123,7 @@
       "name": "POST Registrar usuário padrão",
       "method": "POST",
       "url": "{{ _.baseUrl }}/auth/register",
-      "description": "Cadastro local com perfil padrão (user).",
+      "description": "Cadastro local com perfil padrão (`client`).",
       "headers": [
         {
           "name": "Content-Type",
@@ -132,7 +132,7 @@
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"email\": \"{{ _.userEmail }}\",\n  \"password\": \"{{ _.userPassword }}\",\n  \"confirmPassword\": \"{{ _.userPassword }}\",\n  \"name\": \"Usuário Padrão\",\n  \"dateOfBirth\": \"1995-05-20\",\n  \"role\": \"user\"\n}"
+        "text": "{\n  \"email\": \"{{ _.userEmail }}\",\n  \"password\": \"{{ _.userPassword }}\",\n  \"confirmPassword\": \"{{ _.userPassword }}\",\n  \"name\": \"Usuário Padrão\",\n  \"dateOfBirth\": \"1995-05-20\",\n  \"role\": \"client\"\n}"
       },
       "parentId": "wrk_backend_fullstack",
       "modified": 0,
@@ -153,7 +153,7 @@
       "name": "POST Registrar usuário backlog",
       "method": "POST",
       "url": "{{ _.baseUrl }}/auth/register",
-      "description": "Cadastro local com permissão de backlog.",
+      "description": "Cadastro local promovido a admin (aceita payload legado `backlog`).",
       "headers": [
         {
           "name": "Content-Type",
