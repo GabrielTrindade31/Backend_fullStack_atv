@@ -31,7 +31,7 @@ app.use((err: unknown, _req: express.Request, res: express.Response, _next: expr
 async function bootstrap() {
   try {
     await initializeDatabase();
-    const port = Number(process.env.PORT) || 3000;
+    const port = env.port;
     app.listen(port, () => {
       console.log(`Server running on port ${port}`);
     });

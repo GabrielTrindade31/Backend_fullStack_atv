@@ -1,7 +1,7 @@
 {
   "name": "backend_fullstack_atv",
   "version": "1.0.0",
-  "description": "Backend de autenticação com login local e Google.",
+  "description": "Backend de cadastro com SSO, refresh tokens e login Google.",
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",

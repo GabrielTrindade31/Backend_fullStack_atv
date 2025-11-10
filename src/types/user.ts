@@ -1,3 +1,5 @@
+export type Role = 'client' | 'admin';
+
 export interface User {
   id: string;
   email: string | null;
@@ -5,7 +7,7 @@ export interface User {
   name: string;
   date_of_birth: string | null;
   google_id: string | null;
-  role: 'user' | 'backlog';
+  role: Role;
   created_at: string;
   updated_at: string;
 }
@@ -16,7 +18,7 @@ export interface PublicUser {
   name: string;
   dateOfBirth: string | null;
   googleId: string | null;
-  role: 'user' | 'backlog';
+  role: Role;
   createdAt: string;
   updatedAt: string;
 }

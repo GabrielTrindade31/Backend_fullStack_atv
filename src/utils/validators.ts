@@ -25,10 +25,10 @@ export const registerSchema = z
       return value;
     }),
     role: z
-      .enum(['user', 'backlog'], {
+      .enum(['client', 'admin'], {
         errorMap: () => ({ message: 'Perfil de acesso inválido.' }),
       })
-      .default('user'),
+      .default('client'),
   })
   .superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {
@@ -47,4 +47,12 @@ export const loginSchema = z.object({
 
 export const googleSchema = z.object({
   idToken: z.string({ required_error: 'Token do Google é obrigatório.' }),
+});
+
+export const refreshTokenSchema = z.object({
+  refreshToken: z.string({ required_error: 'Refresh token é obrigatório.' }).min(1, 'Refresh token é obrigatório.'),
+});
+
+export const validateTokenSchema = z.object({
+  token: z.string({ required_error: 'Token é obrigatório.' }).min(1, 'Token é obrigatório.'),
 });

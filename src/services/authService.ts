@@ -1,10 +1,11 @@
 import { randomUUID } from 'crypto';
 import { pool } from '../config/db';
-import { mapToPublicUser, PublicUser, User } from '../types/user';
+import { mapToPublicUser, PublicUser, Role, User } from '../types/user';
 import { hashPassword, verifyPassword } from '../utils/password';
 import { signAccessToken } from '../utils/jwt';
 import { verifyGoogleToken } from './googleAuthService';
 import { getUserPermissions } from './permissionService';
+import { createRefreshToken, rotateRefreshToken, revokeRefreshToken } from './refreshTokenService';
 
 type NullableDate = string | null;
 
@@ -13,7 +14,7 @@ interface RegisterInput {
   password: string;
   name: string;
   dateOfBirth: NullableDate;
-  role: 'user' | 'backlog';
+  role: Role;
 }
 
 interface LoginInput {
@@ -21,8 +22,9 @@ interface LoginInput {
   password: string;
 }
 
-interface AuthResponse {
-  token: string;
+export interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
   user: PublicUser;
   permissions: string[];
 }
@@ -35,6 +37,18 @@ async function findUserByEmail(email: string): Promise<User | null> {
 async function findUserById(id: string): Promise<User | null> {
   const result = await pool.query<User>('SELECT * FROM users WHERE id = $1', [id]);
   return result.rows[0] ?? null;
+}
+
+async function buildAuthResponse(user: User, refreshTokenOverride?: string): Promise<AuthResponse> {
+  const accessToken = signAccessToken(user.id, user.email, user.role);
+  const refreshToken = refreshTokenOverride ?? (await createRefreshToken(user.id));
+  const permissions = await getUserPermissions(user.id);
+  return {
+    accessToken,
+    refreshToken,
+    user: mapToPublicUser(user),
+    permissions,
+  };
 }
 
 export async function registerLocalUser(input: RegisterInput): Promise<AuthResponse> {
@@ -55,9 +69,7 @@ export async function registerLocalUser(input: RegisterInput): Promise<AuthRespo
     );
 
     const user = result.rows[0];
-    const token = signAccessToken(user.id, user.email);
-    const permissions = await getUserPermissions(user.id);
-    return { token, user: mapToPublicUser(user), permissions };
+    return buildAuthResponse(user);
   } catch (error: any) {
     if (error?.code === '23505') {
       throw new Error('E-mail já cadastrado.');
@@ -77,9 +89,7 @@ export async function loginLocalUser(input: LoginInput): Promise<AuthResponse> {
     throw new Error('Credenciais inválidas.');
   }
 
-  const token = signAccessToken(user.id, user.email);
-  const permissions = await getUserPermissions(user.id);
-  return { token, user: mapToPublicUser(user), permissions };
+  return buildAuthResponse(user);
 }
 
 export async function loginWithGoogle(idToken: string): Promise<AuthResponse> {
@@ -135,9 +145,7 @@ export async function loginWithGoogle(idToken: string): Promise<AuthResponse> {
       throw new Error('Não foi possível determinar o usuário autenticado pelo Google.');
     }
 
-    const token = signAccessToken(user.id, user.email);
-    const permissions = await getUserPermissions(user.id);
-    return { token, user: mapToPublicUser(user), permissions };
+    return buildAuthResponse(user);
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
@@ -152,4 +160,29 @@ export async function getUserProfile(userId: string): Promise<PublicUser> {
     throw new Error('Usuário não encontrado.');
   }
   return mapToPublicUser(user);
+}
+
+export async function getUserProfileWithPermissions(
+  userId: string
+): Promise<{ user: PublicUser; permissions: string[] }> {
+  const user = await findUserById(userId);
+  if (!user) {
+    throw new Error('Usuário não encontrado.');
+  }
+  const permissions = await getUserPermissions(userId);
+  return { user: mapToPublicUser(user), permissions };
+}
+
+export async function refreshAuthSession(refreshToken: string): Promise<AuthResponse> {
+  const { user, refreshToken: rotatedToken } = await rotateRefreshToken(refreshToken);
+  return buildAuthResponse(user, rotatedToken);
+}
+
+export async function logoutByRefreshToken(refreshToken: string): Promise<void> {
+  await revokeRefreshToken(refreshToken);
+}
+
+export async function listUsers(): Promise<PublicUser[]> {
+  const result = await pool.query<User>('SELECT * FROM users ORDER BY created_at DESC');
+  return result.rows.map(mapToPublicUser);
 }

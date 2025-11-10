@@ -1,34 +1,38 @@
-# Guia de Integração do Frontend
+# Guia de Integração do Backend de Cadastro
 
-Este documento descreve como um frontend (ou outro backend) pode consumir o serviço de autenticação hospedado neste projeto.
+Este documento descreve como consumir o serviço de autenticação da equipe de Cadastro. A API atua como provedor de identidade e
+SSO para os demais times, oferecendo cadastro local, login interno e via Google, emissão e rotação de tokens e exposição dos
+metadados de permissão exigidos pelo barema do projeto.
 
 ## URL base
 
 ```
-https://<seu-dominio-ou-url-do-vercel>
+https://<seu-dominio-ou-url-do-backend>
 ```
 
-O backend expõe os endpoints abaixo sob o prefixo `/auth`.
+Todos os endpoints descritos abaixo estão sob o prefixo `/auth`.
 
 ## Preparando o banco de dados
 
-Antes de executar o servidor pela primeira vez (ou sempre que precisar garantir que as tabelas existam), rode:
+Antes de subir o servidor, execute:
 
 ```bash
 npm run db:init
 ```
 
-O comando reaproveita a mesma lógica utilizada pelo servidor para criar a tabela `users` e garantir a coluna de `role`, que controla as permissões de backlog.
+O script cria/ajusta as tabelas `users` e `refresh_tokens`, migra perfis antigos (`user` → `client`, `backlog` → `admin`) e aplica
+as restrições necessárias para que os tokens de atualização funcionem corretamente.
 
-## Formato de autenticação
+## Tokens e cabeçalhos
 
-Os tokens JWT retornados pelos endpoints de login devem ser enviados no header `Authorization` com o formato:
+A API trabalha com dois tokens:
 
-```
-Authorization: Bearer <token>
-```
+- **Access token** (JWT, expira em 15 minutos): enviado no header `Authorization: Bearer <token>` em todas as rotas protegidas.
+- **Refresh token** (opaco, expira em 30 dias): deve ser armazenado com segurança pelo cliente e enviado em `/auth/refresh` ou `/auth/logout`.
 
-## Endpoints
+Os refresh tokens são one-time: a cada chamada em `/auth/refresh` o token anterior é revogado e um novo é emitido.
+
+## Endpoints principais
 
 ### `POST /auth/register`
 Cria um usuário local com e-mail e senha.
@@ -41,101 +45,108 @@ Cria um usuário local com e-mail e senha.
   "confirmPassword": "Senha@Forte123",
   "name": "Nome do Usuário",
   "dateOfBirth": "1995-05-20",
-  "role": "user"
+  "role": "client"
 }
 ```
 
-> A senha deve conter pelo menos 8 caracteres, incluindo letras maiúsculas, minúsculas, números e caractere especial.
+> A senha deve ter ao menos 8 caracteres, com letras maiúsculas e minúsculas, número e caractere especial.
 
 **Resposta 201**
 ```json
 {
-  "token": "<jwt>",
+  "accessToken": "<jwt>",
+  "refreshToken": "<uuid>.<opaque-token>",
   "user": {
     "id": "<uuid>",
     "email": "usuario@example.com",
     "name": "Nome do Usuário",
     "dateOfBirth": "1995-05-20",
     "googleId": null,
-    "role": "user",
+    "role": "client",
     "createdAt": "2024-01-01T00:00:00.000Z",
     "updatedAt": "2024-01-01T00:00:00.000Z"
   },
   "permissions": [
     "auth:register",
     "auth:login",
+    "auth:google",
+    "auth:refresh",
     "auth:token:validate",
-    "profile:read",
-    "app:navigation:standard"
+    "sso:session:introspect",
+    "client:dashboard:access",
+    "client:shop:access",
+    "client:shop:checkout",
+    "client:finance:access",
+    "client:engagement:access",
+    "profile:self:read",
+    "profile:self:update"
   ]
 }
 ```
 
-**Possíveis erros**
-
-- `400 Dados inválidos.` — Quando o e-mail já existe, as senhas não coincidem ou algum campo não atende às regras de validação.
-- O payload de erro pode conter o campo `issues` com os detalhes de validação retornados pelo Zod.
+**Erros comuns**
+- `400 Dados inválidos.` – validações de campo ou e-mail duplicado.
 
 ### `POST /auth/login`
-Realiza login via e-mail e senha.
-
-**Body JSON**
-```json
-{
-  "email": "usuario@example.com",
-  "password": "SenhaForte123"
-}
-```
-
-**Resposta 200** – mesmo formato do endpoint de registro.
-
-**Possíveis erros**
-
-- `401 Credenciais inválidas.`
+Login com e-mail e senha. O corpo é igual ao do registro (sem `confirmPassword`, `name`, `role`). A resposta repete o formato acima.
 
 ### `POST /auth/google`
-Realiza login com um token de ID do Google (obtido via Google Identity Services). O backend valida o token, cria o usuário caso não exista e devolve o JWT local.
+Recebe um `idToken` do Google Identity, sincroniza o usuário e devolve o mesmo payload de sessão dos outros logins.
 
-**Body JSON**
 ```json
 {
   "idToken": "token-retornado-pelo-google"
 }
 ```
 
-**Resposta 200** – mesmo formato dos endpoints anteriores.
+### `POST /auth/refresh`
+Rotaciona um refresh token válido e gera um novo par de tokens.
+
+```json
+{
+  "refreshToken": "<uuid>.<opaque-token>"
+}
+```
+
+**Resposta 200** – Igual ao payload de sessão dos endpoints de login.
+
+**Erros**
+- `400 Dados inválidos.` – corpo ausente ou mal formatado.
+- `401` – token inexistente, revogado ou expirado.
+
+### `POST /auth/logout`
+Revoga explicitamente um refresh token.
+
+```json
+{
+  "refreshToken": "<uuid>.<opaque-token>"
+}
+```
+
+**Resposta 204** – Sem corpo.
 
 ### `GET /auth/me`
-Retorna o perfil do usuário autenticado.
+Retorna o usuário autenticado e suas permissões, útil para montar dashboards específicos de cliente ou admin.
 
 **Headers**
 ```
-Authorization: Bearer <jwt>
+Authorization: Bearer <access-token>
 ```
 
 **Resposta 200**
 ```json
 {
-  "user": {
-    "id": "<uuid>",
-    "email": "usuario@example.com",
-    "name": "Nome do Usuário",
-    "dateOfBirth": "1995-05-20",
-    "googleId": null,
-    "role": "user",
-    "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2024-01-01T00:00:00.000Z"
-  }
+  "user": { /* ... */ },
+  "permissions": [ /* ... */ ]
 }
 ```
 
 ### `POST /auth/validate`
-Valida um token JWT sem acessar recursos protegidos.
+Introspecção de access tokens. Pode ser consumido por outros backends que não conseguem validar JWT localmente.
 
-**Body JSON**
 ```json
 {
-  "token": "<jwt>"
+  "token": "<access-token>"
 }
 ```
 
@@ -143,70 +154,50 @@ Valida um token JWT sem acessar recursos protegidos.
 ```json
 {
   "valid": true,
-  "user": {
-    "id": "<uuid>",
+  "user": { /* ... */ },
+  "permissions": [ /* ... */ ],
+  "token": {
+    "subject": "<uuid-do-usuário>",
     "email": "usuario@example.com",
-    "name": "Nome do Usuário",
-    "dateOfBirth": "1995-05-20",
-  "googleId": null,
-  "role": "user",
-  "createdAt": "2024-01-01T00:00:00.000Z",
-  "updatedAt": "2024-01-01T00:00:00.000Z"
-},
-  "permissions": [
-    "auth:register",
-    "auth:login",
-    "auth:token:validate",
-    "profile:read",
-    "app:navigation:standard",
-    "backlog:access"
+    "role": "client"
+  }
+}
+```
+
+**Erros**
+- `400` – token não informado.
+- `401` – token inválido.
+- `404` – usuário removido/indisponível.
+
+### `GET /auth/users`
+Lista todos os usuários para o backoffice. Requer usuário autenticado com perfil `admin`.
+
+**Resposta 200**
+```json
+{
+  "users": [
+    { "id": "...", "role": "client", ... }
   ]
 }
 ```
 
-**Resposta 401** (token inválido)
-```json
-{
-  "valid": false,
-  "message": "Token inválido."
-}
-```
+### `GET /auth/users/:id`
+Retorna o perfil e as permissões de um usuário específico. Admins podem consultar qualquer conta; clientes podem consultar apenas o próprio ID.
 
-**Resposta 404** (usuário não encontrado)
-```json
-{
-  "valid": false,
-"message": "Usuário não encontrado."
-}
-```
+## Perfis e permissões
 
-## Perfis de acesso e backlog
+| Perfil | Descrição | Permissões adicionais |
+| ------ | --------- | --------------------- |
+| `client` | Usuário final da plataforma. Pode navegar na loja, contratar financiamentos e acompanhar pontos. | `client:dashboard:access`, `client:shop:*`, `client:finance:access`, `client:engagement:access`, `profile:self:*` |
+| `admin` | Operadores de backoffice. Não podem comprar/financiar, mas possuem visão e edição global. | `admin:backoffice:access`, `admin:users:*`, `admin:products:manage`, `admin:finance:overview`, `analytics:global:read` |
 
-- **user**: acesso padrão para páginas comuns do portal. As permissões retornadas incluirão `app:navigation:standard`, que pode ser utilizada pelos outros backends para liberar rotas genéricas.
-- **backlog**: inclui todas as permissões anteriores e adiciona `backlog:access`. Outros serviços podem checar a presença dessa string para liberar funcionalidades exclusivas de backlog.
+Todos os perfis recebem o conjunto base (`auth:*`, `sso:session:introspect`). Outros serviços devem usar essas permissões para aplicar as regras do desafio (ex.: bloquear admins em rotas de compra ou direcionar clientes ao dashboard).
 
-Sempre que um novo cadastro precisar de acesso ao backlog, informe `"role": "backlog"` no payload de registro ou atualize a coluna `role` diretamente na tabela `users`.
+## Boas práticas para os outros times
 
-## Fluxo do login com Google
+- Armazene o refresh token com segurança (cookie httpOnly ou storage seguro) e sempre rotacione via `/auth/refresh` ao iniciar a aplicação.
+- Consulte `/auth/validate` ou decodifique o JWT internamente antes de liberar rotas críticas.
+- Utilize `role` e o array de `permissions` retornados para decidir redirecionamentos (cliente → dashboard, admin → backoffice).
+- Em caso de dúvida sobre consistência de tokens, faça logout forçado enviando o refresh token para `/auth/logout`.
 
-1. No frontend, use a Google Identity Services SDK para obter um `idToken` do usuário autenticado.
-2. Envie o token para `POST /auth/google`.
-3. Receba o JWT local e os dados do usuário para armazenar no estado da aplicação.
-
-Certifique-se de configurar a variável de ambiente `GOOGLE_CLIENT_ID` com o mesmo client ID utilizado no frontend.
-
-## Variáveis de ambiente necessárias no frontend
-
-Para consumir o backend, o frontend precisa conhecer apenas a URL base dos endpoints e, no caso de login com Google, usar o mesmo Client ID configurado no backend.
-
-## Tratamento de erros
-
-Todos os endpoints retornam erros no formato:
-
-```json
-{
-  "message": "Descrição do erro"
-}
-```
-
-Algumas validações retornam o campo adicional `issues` com detalhes do problema de validação.
+Com isso, o backend de Cadastro oferece um núcleo SSO completo para suportar os demais microserviços do ecossistema.
