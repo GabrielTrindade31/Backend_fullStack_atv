@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
   provider VARCHAR(32) NOT NULL DEFAULT 'local' CHECK (provider IN ('local', 'google')),
   google_id VARCHAR(255) UNIQUE,
   picture_url TEXT,
+  birth_date DATE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

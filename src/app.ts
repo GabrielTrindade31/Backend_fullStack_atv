@@ -22,8 +22,7 @@ export const createApp = (): express.Application => {
   app.use(
     '/docs',
     swaggerUi.serve,
-    swaggerUi.setup(undefined, {
-      swaggerOptions: { url: '/docs.json' },
+    swaggerUi.setup(swaggerSpec, {
       explorer: true,
     })
   );
