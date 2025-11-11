@@ -120,7 +120,7 @@ exports.taskRepository = {
         DELETE FROM tasks
         WHERE id = $1
       `, [taskId]);
-        return result.rowCount > 0;
+        return (result.rowCount ?? 0) > 0;
     },
 };
 //# sourceMappingURL=task.model.js.map

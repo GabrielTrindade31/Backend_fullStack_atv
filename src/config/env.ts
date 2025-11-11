@@ -37,7 +37,12 @@ export const env: EnvConfig = {
   databaseSsl: resolveDatabaseSsl(),
 };
 
-export const validateEnv = (): void => {
+export interface ValidateEnvOptions {
+  requireGoogleClientId?: boolean;
+}
+
+export const validateEnv = (options: ValidateEnvOptions = {}): void => {
+  const { requireGoogleClientId = false } = options;
   const missing: string[] = [];
 
   if (!env.databaseUrl) {
@@ -48,7 +53,7 @@ export const validateEnv = (): void => {
     missing.push('JWT_SECRET');
   }
 
-  if (!env.googleClientId) {
+  if (requireGoogleClientId && !env.googleClientId) {
     missing.push('GOOGLE_CLIENT_ID');
   }
 
@@ -56,3 +61,5 @@ export const validateEnv = (): void => {
     throw new Error(`Variáveis de ambiente ausentes: ${missing.join(', ')}`);
   }
 };
+
+export const isGoogleAuthConfigured = (): boolean => env.googleClientId.trim().length > 0;

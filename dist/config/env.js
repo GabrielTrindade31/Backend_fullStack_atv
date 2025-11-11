@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateEnv = exports.env = void 0;
+exports.isGoogleAuthConfigured = exports.validateEnv = exports.env = void 0;
 const dotenv_1 = require("dotenv");
 (0, dotenv_1.config)();
 const resolveDatabaseUrl = () => {
@@ -24,7 +24,8 @@ exports.env = {
     databaseUrl: resolveDatabaseUrl(),
     databaseSsl: resolveDatabaseSsl(),
 };
-const validateEnv = () => {
+const validateEnv = (options = {}) => {
+    const { requireGoogleClientId = false } = options;
     const missing = [];
     if (!exports.env.databaseUrl) {
         missing.push(exports.env.nodeEnv === 'production' ? 'DATABASE_URL_PROD' : 'DATABASE_URL');
@@ -32,7 +33,7 @@ const validateEnv = () => {
     if (!exports.env.jwtSecret) {
         missing.push('JWT_SECRET');
     }
-    if (!exports.env.googleClientId) {
+    if (requireGoogleClientId && !exports.env.googleClientId) {
         missing.push('GOOGLE_CLIENT_ID');
     }
     if (missing.length > 0) {
@@ -40,4 +41,6 @@ const validateEnv = () => {
     }
 };
 exports.validateEnv = validateEnv;
+const isGoogleAuthConfigured = () => exports.env.googleClientId.trim().length > 0;
+exports.isGoogleAuthConfigured = isGoogleAuthConfigured;
 //# sourceMappingURL=env.js.map

@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { AppError } from '../errors/AppError';
 import { userRepository, UserRecord } from '../models/user.model';
 import { refreshTokenRepository } from '../models/refresh-token.model';
-import { env, validateEnv } from '../config/env';
+import { env, validateEnv, isGoogleAuthConfigured } from '../config/env';
 import logger from '../utils/logger';
 
 const passwordSchema = z
@@ -251,6 +251,11 @@ export class AuthService {
     input: GoogleLoginInput,
     context?: { userAgent?: string; ip?: string }
   ): Promise<AuthTokenPayload> {
+    if (!isGoogleAuthConfigured()) {
+      logger.error('Tentativa de login com Google sem GOOGLE_CLIENT_ID configurado.');
+      throw new AppError('Login com Google não está configurado.', 503);
+    }
+
     const payload = googleLoginSchema.parse(input);
 
     logger.info('Tentativa de login com Google recebida.');
