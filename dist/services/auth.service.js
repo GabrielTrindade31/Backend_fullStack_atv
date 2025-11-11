@@ -20,13 +20,45 @@ const passwordSchema = zod_1.z
     .regex(/[a-z]/, 'A senha deve possuir ao menos uma letra minúscula.')
     .regex(/\d/, 'A senha deve possuir ao menos um número.')
     .regex(/[^A-Za-z0-9]/, 'A senha deve possuir ao menos um caractere especial.');
-const registerSchema = zod_1.z.object({
-    name: zod_1.z.string().min(3, 'O nome deve possuir ao menos 3 caracteres.'),
-    email: zod_1.z.string().email('E-mail inválido.'),
+const fullNameSchema = zod_1.z
+    .string()
+    .min(3, 'O nome deve possuir ao menos 3 caracteres.')
+    .refine((value) => value.trim().split(/\s+/).length >= 2, 'Informe o nome completo (nome e sobrenome).')
+    .transform((value) => value.trim().replace(/\s+/g, ' '));
+const birthDateSchema = zod_1.z
+    .string()
+    .trim()
+    .refine((value) => !Number.isNaN(Date.parse(value)), 'Data de nascimento inválida.')
+    .transform((value) => {
+    const date = new Date(value);
+    date.setHours(0, 0, 0, 0);
+    return date;
+})
+    .refine((date) => date.getTime() <= Date.now(), 'A data de nascimento não pode estar no futuro.')
+    .refine((date) => {
+    const today = new Date();
+    const minimumBirthDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate());
+    return date <= minimumBirthDate;
+}, 'É necessário ter pelo menos 13 anos para se cadastrar.');
+const registerSchema = zod_1.z
+    .object({
+    name: fullNameSchema,
+    email: zod_1.z.string().trim().email('E-mail inválido.').transform((value) => value.toLowerCase()),
     password: passwordSchema,
+    confirmPassword: zod_1.z.string(),
+    birthDate: birthDateSchema,
+})
+    .superRefine((data, ctx) => {
+    if (data.password !== data.confirmPassword) {
+        ctx.addIssue({
+            code: zod_1.z.ZodIssueCode.custom,
+            path: ['confirmPassword'],
+            message: 'As senhas não coincidem.',
+        });
+    }
 });
 const loginSchema = zod_1.z.object({
-    email: zod_1.z.string().email('E-mail inválido.'),
+    email: zod_1.z.string().trim().email('E-mail inválido.').transform((value) => value.toLowerCase()),
     password: zod_1.z.string().min(8, 'Senha inválida.'),
 });
 const refreshSchema = zod_1.z.object({
@@ -47,6 +79,7 @@ const sanitizeUser = (user) => ({
     role: user.role,
     provider: user.provider,
     pictureUrl: user.pictureUrl,
+    birthDate: user.birthDate,
     createdAt: user.createdAt,
 });
 class AuthService {
@@ -113,7 +146,7 @@ class AuthService {
         };
     }
     async register(input, context) {
-        const payload = registerSchema.parse(input);
+        const { confirmPassword: _confirmPassword, ...payload } = registerSchema.parse(input);
         logger_1.default.info('Iniciando registro de usuário', { email: payload.email });
         const existingUser = await user_model_1.userRepository.findByEmail(payload.email);
         if (existingUser) {
@@ -127,6 +160,7 @@ class AuthService {
             password: hashedPassword,
             role: 'customer',
             provider: 'local',
+            birthDate: payload.birthDate,
         });
         logger_1.default.info('Usuário registrado com sucesso', { userId: user.id });
         await refresh_token_model_1.refreshTokenRepository.revokeAllForUser(user.id);
@@ -165,7 +199,7 @@ class AuthService {
         logger_1.default.info('Tentativa de login com Google recebida.');
         const googlePayload = await this.verifyGoogleIdToken(payload.idToken);
         const googleId = googlePayload.sub;
-        const email = googlePayload.email;
+        const email = googlePayload.email?.toLowerCase();
         if (!email) {
             logger_1.default.warn('ID token do Google sem e-mail associado.');
             throw new AppError_1.AppError('Token do Google inválido.', 401);
@@ -188,6 +222,7 @@ class AuthService {
                     provider: 'google',
                     googleId,
                     pictureUrl: googlePayload.picture ?? null,
+                    birthDate: null,
                 });
             }
         }

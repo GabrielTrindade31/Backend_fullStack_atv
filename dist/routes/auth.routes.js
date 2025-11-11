@@ -17,11 +17,20 @@ router.use('/auth', authRouter);
  *         application/json:
  *           schema:
  *             type: object
- *             required: [name, email, password]
+ *             required: [name, email, password, confirmPassword, birthDate]
  *             properties:
- *               name: { type: string }
+ *               name:
+ *                 type: string
+ *                 description: Nome completo do usuário
  *               email: { type: string, format: email }
  *               password: { type: string, minLength: 8 }
+ *               confirmPassword:
+ *                 type: string
+ *                 description: Deve ser idêntica ao campo password
+ *               birthDate:
+ *                 type: string
+ *                 format: date
+ *                 description: Data de nascimento no formato ISO (AAAA-MM-DD)
  *     responses:
  *       201:
  *         description: Usuário criado
