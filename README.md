@@ -232,11 +232,13 @@ Antes de executar as requisições de tarefas configure, no Insomnia/Postman, os
 
 ## Deploy na Vercel
 
-1. Instale a CLI da Vercel (localmente ou no Codespace):
+1. (Opcional) Instale a CLI da Vercel (localmente ou no Codespace):
 
    ```bash
    npm install -g vercel
    ```
+
+   > Se o repositório estiver conectado ao GitHub, você pode iniciar o deploy diretamente pelo painel da Vercel sem executar comandos no workspace. A CLI é útil apenas quando quiser disparar deploys ou gerenciar variáveis via terminal.
 
 2. Autentique-se e associe o projeto:
 
@@ -274,6 +276,8 @@ Antes de executar as requisições de tarefas configure, no Insomnia/Postman, os
    > **Dica:** no Codespaces você pode importar as variáveis locais com `vercel env pull` e publicá-las com `vercel env push`. Caso prefira configurar pelo painel (como na captura enviada), adicione cada chave na tabela de *Environment Variables* clicando em **Add More** e preenchendo o valor correspondente.
 
    Se desejar usar o mesmo banco em previews, replique essas variáveis no escopo `Preview` ou aponte `DATABASE_URL` diretamente para a mesma URL.
+
+   > Com o projeto conectado ao GitHub, basta clicar em **Deploy** no dashboard — nenhuma etapa adicional precisa ser rodada manualmente no Codespace. Use o comando abaixo apenas se preferir subir pelo terminal.
 
 5. Faça o deploy (primeiro um preview, depois produção):
 
