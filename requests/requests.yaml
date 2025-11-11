@@ -18,11 +18,12 @@ resources:
     created: 0
     name: Base Environment
     data:
-      base_url: https://postgree.onemoretry.net
+      base_url: https://frontend-full-stack-atv-ueam.vercel.app
       token: ""
       token_outro_usuario: ""
       task_id: ""
       task_id_outro_usuario: ""
+      google_id_token: ""
     _type: environment
 
   # -------- REGISTER --------
@@ -129,6 +130,22 @@ resources:
         {
           "email": "gabriel+ok@example.com",
           "password": "Aa@123456"
+        }
+    _type: request
+
+  - _id: req_login_google
+    parentId: wrk_mpf
+    name: Login com Google
+    method: POST
+    url: "{{ _.base_url }}/auth/login/google"
+    headers:
+      - name: Content-Type
+        value: application/json
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "idToken": "{{ _.google_id_token }}"
         }
     _type: request
 

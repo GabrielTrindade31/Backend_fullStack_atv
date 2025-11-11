@@ -157,6 +157,10 @@ class AuthService {
         return this.generateTokens(user, context);
     }
     async loginWithGoogle(input, context) {
+        if (!(0, env_1.isGoogleAuthConfigured)()) {
+            logger_1.default.error('Tentativa de login com Google sem GOOGLE_CLIENT_ID configurado.');
+            throw new AppError_1.AppError('Login com Google não está configurado.', 503);
+        }
         const payload = googleLoginSchema.parse(input);
         logger_1.default.info('Tentativa de login com Google recebida.');
         const googlePayload = await this.verifyGoogleIdToken(payload.idToken);
