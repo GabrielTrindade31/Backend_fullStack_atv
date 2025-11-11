@@ -22,6 +22,7 @@ exports.swaggerSpec = (0, swagger_jsdoc_1.default)({
                         role: { type: 'string', enum: ['customer', 'admin'] },
                         provider: { type: 'string', enum: ['local', 'google'] },
                         pictureUrl: { type: 'string', nullable: true },
+                        birthDate: { type: 'string', format: 'date', nullable: true },
                         createdAt: { type: 'string', format: 'date-time' },
                     },
                 },

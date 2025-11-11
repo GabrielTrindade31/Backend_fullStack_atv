@@ -17,6 +17,7 @@ export const swaggerSpec = swaggerJsdoc({
             role: { type: 'string', enum: ['customer', 'admin'] },
             provider: { type: 'string', enum: ['local', 'google'] },
             pictureUrl: { type: 'string', nullable: true },
+            birthDate: { type: 'string', format: 'date', nullable: true },
             createdAt: { type: 'string', format: 'date-time' },
           },
         },

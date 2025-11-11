@@ -24,6 +24,7 @@ resources:
       task_id: ""
       task_id_outro_usuario: ""
       google_id_token: ""
+      refresh_token: ""
     _type: environment
 
   # -------- REGISTER --------
@@ -39,9 +40,11 @@ resources:
       mimeType: application/json
       text: |
         {
-          "name": "Gabriel",
+          "name": "Gabriel Santos",
           "email": "gabriel+ok@example.com",
-          "password": "Aa@123456"
+          "password": "Aa@123456",
+          "confirmPassword": "Aa@123456",
+          "birthDate": "1995-05-10"
         }
     _type: request
 
@@ -57,9 +60,11 @@ resources:
       mimeType: application/json
       text: |
         {
-          "name": "Gabriel",
+          "name": "Gabriel Santos",
           "email": "gabriel+ok@example.com",
-          "password": "Aa@123456"
+          "password": "Aa@123456",
+          "confirmPassword": "Aa@123456",
+          "birthDate": "1995-05-10"
         }
     _type: request
 
@@ -75,9 +80,11 @@ resources:
       mimeType: application/json
       text: |
         {
-          "name": "Gabriel",
+          "name": "Gabriel Santos",
           "email": "gabriel+weak@example.com",
-          "password": "123"
+          "password": "123",
+          "confirmPassword": "123",
+          "birthDate": "1995-05-10"
         }
     _type: request
 
@@ -93,9 +100,11 @@ resources:
       mimeType: application/json
       text: |
         {
-          "name": "Gabriel",
+          "name": "Gabriel Santos",
           "email": "email-invalido",
-          "password": "Aa@123456"
+          "password": "Aa@123456",
+          "confirmPassword": "Aa@123456",
+          "birthDate": "1995-05-10"
         }
     _type: request
 
@@ -196,6 +205,22 @@ resources:
       text: |
         {
           "email": "gabriel@example.com"
+        }
+    _type: request
+
+  - _id: req_logout
+    parentId: wrk_mpf
+    name: Logout - revogar refresh token
+    method: POST
+    url: "{{ _.base_url }}/auth/logout"
+    headers:
+      - name: Content-Type
+        value: application/json
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "refreshToken": "{{ _.refresh_token }}"
         }
     _type: request
 

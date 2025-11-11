@@ -22,8 +22,7 @@ const createApp = () => {
     // JSON da spec (útil para debug)
     app.get('/docs.json', (_req, res) => res.json(swagger_1.swaggerSpec));
     // UI
-    app.use('/docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(undefined, {
-        swaggerOptions: { url: '/docs.json' },
+    app.use('/docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_1.swaggerSpec, {
         explorer: true,
     }));
     app.use(routes_1.default);
